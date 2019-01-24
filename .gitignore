@@ -363,3 +363,7 @@ healthchecksdb
 /Game Engine/oryol-samples
 /Game Engine/oryol-sound
 /Game Engine/oryol-tbui
+/AI programing/BaseGameEntity/BaseGameEntity/*.pyproj
+/AI programing/BaseGameEntity/BaseGameEntity/__pycache__
+/AI programing/BaseGameEntity/.vs
+/AI programing/Lab 1A/Lab 1A/*.pyproj
