@@ -367,3 +367,27 @@ healthchecksdb
 /AI programing/BaseGameEntity/BaseGameEntity/__pycache__
 /AI programing/BaseGameEntity/.vs
 /AI programing/Lab 1A/Lab 1A/*.pyproj
+/GameEngine/fips-unittestpp
+/GameEngine/fips-vld
+/GameEngine/fips-zlib
+/GameEngine/gliml
+/GameEngine/oryol
+/GameEngine/oryol-animation
+/GameEngine/oryol-fileformats
+/GameEngine/oryol-imgui
+/GameEngine/oryol-nuklear
+/GameEngine/oryol-samples
+/GameEngine/oryol-sound
+/GameEngine/oryol-tbui
+/GameEngine/fips
+/GameEngine/fips-build
+/GameEngine/fips-bullet
+/GameEngine/fips-deploy
+/GameEngine/fips-glfw
+/GameEngine/fips-glm
+/GameEngine/fips-imgui
+/GameEngine/fips-libcurl
+/GameEngine/fips-nuklear
+/GameEngine/fips-remotery
+/GameEngine/fips-soloud
+/GameEngine/fips-turbobadger
