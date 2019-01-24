@@ -97,7 +97,7 @@ class Drinking(State):
         return 0
 
     def Exit(self):
-        print("Leaving Bank!")
+        print("Leaving Bar!")
         time.sleep(2)
         clear = lambda: os.system('cls')
         clear()
