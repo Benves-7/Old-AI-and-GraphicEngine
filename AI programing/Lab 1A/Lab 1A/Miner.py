@@ -11,6 +11,8 @@ class Miner(BaseGameEntity.BaseGameEntity):
     m_iMoneyInBank = 0
     m_iThirst = 0
     m_iFatige = 0
+    m_iSocial = 0
+    m_iHunger = 0
 
 
     def __init__(self, name, id, newState, location, goldCarried, moneyInBank, thirst, fatige):
@@ -24,10 +26,13 @@ class Miner(BaseGameEntity.BaseGameEntity):
 
     def Update(self):
         self.m_iThirst += 1
+        self.m_iHunger += 1
+        if self.m_iThirst >= 25 or self.m_iThirst >= 45:
+            self.ChangeState(State.Dead)
         self.m_pCurrentState.Execute(self)
     
     def ChangeState(self, newState):
-        self.m_pCurrentState.Exit()
+        self.m_pCurrentState.Exit(self)
         self.m_pCurrentState = newState
         self.m_pCurrentState.Enter(self)
 
