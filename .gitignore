@@ -391,3 +391,5 @@ healthchecksdb
 /GameEngine/fips-remotery
 /GameEngine/fips-soloud
 /GameEngine/fips-turbobadger
+/GameEngine/Assignment/.fips-imports.cmake
+/GameEngine/Assignment/.fips-settings.yml

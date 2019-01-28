@@ -5,7 +5,8 @@ class Miner(BaseGameEntity.BaseGameEntity):
     m_ID = 0
     m_Name = ""
     m_Doing = ""
-    m_pCurrentState = State.Home
+    m_pCurrentState = State.State
+    m_pPreviousState = State.State
     m_Location = "Mine"
     m_iGoldCarried = 0
     m_iMoneyInBank = 0

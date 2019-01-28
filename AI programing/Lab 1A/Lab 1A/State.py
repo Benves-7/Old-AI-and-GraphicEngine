@@ -4,11 +4,11 @@ import os
 class State():
     
     def Enter(self):
-        assert 0, "Error in Enter"
+        return 0
     def Execute(self):
-        assert 0, "Error in Execute"
+        return 0
     def Exit(self):
-        assert 0, "Error in Exit"
+        return 0
 
 class Home(State):
     def Exit(self, miner):
@@ -130,6 +130,3 @@ class Dead(State):
 
     def Exit(miner):
         miner.m_Doint = "Dying"
-#class Citylife(State):
-
-#class Buying(State):
