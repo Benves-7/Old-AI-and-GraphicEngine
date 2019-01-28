@@ -1,6 +1,8 @@
 import time
 import os
 
+#Bilip was here (:
+
 class State():
     
     def Enter(self):
@@ -9,6 +11,18 @@ class State():
         return 0
     def Exit(self):
         return 0
+
+class GoTowards(State):
+	def Enter(self):
+		return 0
+
+	def Execute(miner):
+		# Walks towards pos, returns whether miner is at pos
+
+		return 0
+	
+	def Exit(self):
+		return 0
 
 class Home(State):
     def Exit(self, miner):
@@ -19,29 +33,28 @@ class Home(State):
 
 class Working(State):
 
-    def Enter(miner):
-        miner.m_Doing = "Moving"
-        miner.ChangeLocation("Mine")
+	def Enter(miner):
+		miner.m_Doing = "Moving"
 
-    def Execute(miner):
-        miner.m_Doing = "Mining"
-        miner.m_iFatige += 5
-        miner.m_iGoldCarried += 2
+	def Execute(miner):
+		miner.m_Doing = "Mining"
+		miner.m_iFatige += 5
+		miner.m_iGoldCarried += 2
 
-        if miner.m_iGoldCarried >= 10:
-            miner.ChangeState(Banking)
+		if miner.m_iGoldCarried >= 10:
+			miner.ChangeState(Banking)
 
-        if miner.m_iFatige >= 40:
-            miner.ChangeState(Sleeping)
+		if miner.m_iFatige >= 40:
+			miner.ChangeState(Sleeping)
 
-        if miner.m_iThirst >= 40:
-            miner.ChangeState(Drinking)
+		if miner.m_iThirst >= 40:
+			miner.ChangeState(Drinking)
 
-        if miner.m_iHunger >= 20:
-            miner.ChangeState(Eating)
-
-    def Exit(miner):
-        miner.m_Doing = "Leaving Mine!"
+		if miner.m_iHunger >= 20:
+			miner.ChangeState(Eating)
+	
+	def Exit(miner):
+		miner.m_Doing = "Leaving Mine!"
 
 class Sleeping(State):
     def Enter(miner):
