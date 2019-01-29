@@ -4,17 +4,24 @@ from Positions import *
 from Graphics import *
 
 class Miner(BaseGameEntity):
+
+	# Id, Name and a current activity.
 	m_ID = 0
 	m_Name = ""
 	m_Doing = ""
+	
+	# Current- and previous-State
 	m_pCurrentState = State
 	m_pPreviousState = State
-	m_iSpeed = 2
+	
+	# Used to make miner move between locations.
 	m_Location = "Home"
-	m_tPos = Position.pos.get(m_Location)
-	m_PTpos = Point(m_tPos[0], m_tPos[1])
-	m_Text = Text(m_PTpos, m_Name)
+	m_tPos = Position.pos.get(m_Location)	# Tuple (x,y) of the position m_Location.
+	m_PTpos = Point(m_tPos[0], m_tPos[1])	# make a graphic point with the position.
+	m_Text = Text(m_PTpos, m_Name)			# makes a grapic tect with point and the m_Name.
+	m_iSpeed = 2							# the speed of the miner.
 
+	# Variables that is used in AI-decisions.
 	m_iGoldCarried = 0
 	m_iMoneyInBank = 0
 	m_iThirst = 0

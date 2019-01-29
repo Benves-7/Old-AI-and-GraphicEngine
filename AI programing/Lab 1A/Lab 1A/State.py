@@ -17,11 +17,23 @@ class State():
 
 def GoTowards(miner, pos):
     # walks toward pos, returns whether person is at pos.
+	x = Positions.Position.pos.get(pos)[0]
+	y = Positions.Position.pos.get(pos)[1]
 	distX = miner.m_tPos[0] - Positions.Position.pos.get(pos)[0]
 	distY = miner.m_tPos[1] - Positions.Position.pos.get(pos)[1]
 	v = atan2(distX, distY)
 	dx = -cos(v)*miner.m_iSpeed
 	dy = -sin(v)*miner.m_iSpeed
+	
+	if abs(dx) > abs(distX):
+		dx = -distX
+	if abs(dy) > abs(distY):
+		dy = -distY
+	
+	if abs(dx) == 0 and dy != 0:
+		dy = v/miner.m_iSpeed
+	if abs(dy) == 0 and dx != 0:
+		dx = v/miner.m_iSpeed
 
 	if abs(dx) > abs(distX):
 		dx = -distX
@@ -55,7 +67,7 @@ class Working(State):
 	def Execute(miner):
 		if GoTowards(miner, miner.m_Location):
 			miner.m_Doing = "Mining"
-			miner.m_iFatige += 5
+			miner.m_iFatige += 4
 			miner.m_iGoldCarried += 2
 
 		if miner.m_iGoldCarried >= 200:
