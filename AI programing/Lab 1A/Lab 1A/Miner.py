@@ -1,15 +1,19 @@
-import BaseGameEntity
-import State
-import Positions
+from BaseGameEntity import *
+from State import *
+from Positions import *
+from Graphics import *
 
-class Miner(BaseGameEntity.BaseGameEntity):
+class Miner(BaseGameEntity):
 	m_ID = 0
 	m_Name = ""
 	m_Doing = ""
-	m_pCurrentState = State.State
-	m_pPreviousState = State.State
+	m_pCurrentState = State
+	m_pPreviousState = State
+	m_iSpeed = 2
 	m_Location = "Home"
-	m_tPosition = Positions.Position.pos.get(m_Location)
+	m_tPos = Position.pos.get(m_Location)
+	m_PTpos = Point(m_tPos[0], m_tPos[1])
+	m_Text = Text(m_PTpos, m_Name)
 
 	m_iGoldCarried = 0
 	m_iMoneyInBank = 0
@@ -19,9 +23,10 @@ class Miner(BaseGameEntity.BaseGameEntity):
 	m_iHunger = 0
 
 
-	def __init__(self, name, id, newState, location, goldCarried, moneyInBank, thirst, fatige):
+	def __init__(self, name, window, newState, location, goldCarried, moneyInBank, thirst, fatige):
 		self.m_Name = name
-		BaseGameEntity.BaseGameEntity.SetID(self, id)
+		BaseGameEntity.SetID(self)
+		self.m_gWindow = window
 		self.SetState(newState)
 		self.m_iGoldCarried = goldCarried
 		self.m_iMoneyInBank = moneyInBank
@@ -30,10 +35,12 @@ class Miner(BaseGameEntity.BaseGameEntity):
 
 
 	def Update(self):
+		if self.m_iHunger >= 2000 or self.m_iThirst >= 3000:
+			self.ChangeState(Dead)
+			self.m_pCurrentState.Execute(self)
+			return
 		self.m_iThirst += 1
 		self.m_iHunger += 1
-		if self.m_iThirst >= 25 or self.m_iThirst >= 45:
-			self.ChangeState(State.Dead)
 		self.m_pCurrentState.Execute(self)
 
 	def ChangeState(self, newState):

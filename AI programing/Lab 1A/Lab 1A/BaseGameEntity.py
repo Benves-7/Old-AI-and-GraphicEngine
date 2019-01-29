@@ -5,9 +5,7 @@ class BaseGameEntity:
     def __init__(self, id):
         SetID(id)
         
-    def SetID(self, id):
-        if id >= BaseGameEntity.iNextValidID:
-            BaseGameEntity.iNextValidID = id
+    def SetID(self):
         self.m_ID = BaseGameEntity.iNextValidID
         BaseGameEntity.iNextValidID += 1
 
