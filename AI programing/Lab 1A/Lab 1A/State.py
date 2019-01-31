@@ -2,10 +2,9 @@ import Positions
 import time
 import os
 import Graphics
-from 
+import BaseGameEntity
+from MessageDispatcher import *
 from math import *
-
-#Bilip was here (:
 
 class State():
 
@@ -15,25 +14,22 @@ class State():
 		return 0
 	def Exit(self):
 		return 0
+
 	def MessageRecieved(self, message):
 		#Another agent wants to meet with this agent
 		if message["message"]["call"] == "meet":
 			#If the agent is lonely enought it will accept the request
-			if message["header"]["receiver"].loneliness > 50:
+			if message["header"]["receiver"].m_iSocial > 1000:
 				#The agent wants to meet, starts walking to the destination
-				message["header"]["receiver"].locationGoTo = message["message"]["place"]
-				message["header"]["receiver"].nextState = Waiting()
-				message["header"]["receiver"].changeState(Walking())
-				print("Okej!")
+				message["header"]["receiver"].ChangeState(Meeting)
+				message["header"]["receiver"].m_bLonely = True
 				#Sends a message to the sender to confirm that the agent wants to meet.
-				MessageDispatcher.DispatchMessage(message["header"]["receiver"].entity_ID, message["header"]["sender"].entity_ID, 0, {"call" : "anwser", "place" : message["message"]["place"]})
+				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : message["message"]["place"]})
 
 		elif message["message"]["call"] == "anwser":
 			#The other agent want's to meet. Starts walking to the destination.
-			print(str(message["header"]["receiver"].entity_ID)+ ": JAA")
-			message["header"]["receiver"].locationGoTo = message["message"]["place"]
-			message["header"]["receiver"].nextState = Waiting()
-			message["header"]["receiver"].changeState(Walking())
+			message["header"]["receiver"].ChangeState(Meeting)
+
 			return
 
 		elif message["message"]["call"] == "arrived":
@@ -42,6 +38,8 @@ class State():
 		    # Othervise wait until the other agent arrives or 
 		    # cancels the meeting or if you the current agent needs to do something else.
 			return
+		elif message["message"]["call"] == "leaving":
+			message["header"]["receiver"].ChangeState(Working)
 
 class Home(State):
 	def Exit(self, miner):
@@ -49,6 +47,41 @@ class Home(State):
 
 	def Execute(self, miner):
 		miner.ChangeState(Working)
+class Meeting(State):
+
+	peopleHere = {}
+
+	def Enter(miner):
+			miner.m_Location = "Bar"
+			miner.m_Doing = "Moving to Bar - Meeting"
+			miner.m_bMeeting = True
+
+	def Execute(miner):
+		if miner.GoTowards():
+			Meeting.peopleHere[miner.m_ID] = True
+			if len(Meeting.peopleHere) > 1:
+				miner.m_iSocial -= 10
+			if miner.m_iSocial <= 0:
+				miner.m_iSocial = 0
+				miner.m_bLonely = False
+		if not miner.m_bLonely or not miner.m_bMeeting:
+			miner.ChangeState(Working)
+			return
+		if miner.m_bHungry:
+			miner.ChangeState(Eating)
+			return
+		if miner.m_bThirsty:
+			miner.ChangeState(Drinking)
+			return
+
+
+	def Exit(miner):
+		if miner.m_ID in Meeting.peopleHere:
+			del Meeting.peopleHere[miner.m_ID]
+			for x in Meeting.peopleHere.keys():
+				Meeting.peopleHere.get(x).m_bMeeting = False
+		miner.m_bMeeting = False
+
 
 class Working(State):
 
@@ -75,7 +108,7 @@ class Working(State):
 			miner.ChangeState(Shopping)
 			return 0
 		
-		if miner.m_bPocketsFull :
+		if miner.m_bPocketsFull:
 			miner.ChangeState(Banking)
 			return 0
 
@@ -94,8 +127,7 @@ class Working(State):
 			miner.ChangeState(Shopping)
 			return 0
 
-
-
+	
 	def Exit(miner):
 		miner.m_Doing = "Leaving Work!"
 

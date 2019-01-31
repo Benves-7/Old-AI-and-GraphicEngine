@@ -1,7 +1,9 @@
 from BaseGameEntity import *
+from EntityManager import *
 from State import *
 from Positions import *
 from Graphics import *
+from MessageDispatcher import *
 
 class Miner(BaseGameEntity):
 
@@ -41,10 +43,12 @@ class Miner(BaseGameEntity):
 	m_bGotFood = False
 	m_bGotMoney = False
 	m_bPocketsFull = False
+	m_bMeeting = False
 
-	def __init__(self, name, window, thirst = 0, fatige = 0, hunger = 0, goldCarried = 0, moneyInBank = 0):
+	def __init__(self, name, window, social = 0, thirst = 0, fatige = 0, hunger = 0, goldCarried = 0, moneyInBank = 0):
 		self.m_Name = name
 		BaseGameEntity.SetID(self)
+		EntityManager.addEntity(self)
 		self.m_gWindow = window
 		self.SetState(Home())
 		self.m_iGoldCarried = goldCarried
@@ -52,6 +56,7 @@ class Miner(BaseGameEntity):
 		self.m_iThirst = thirst
 		self.m_iFatige = fatige
 		self.m_iHunger = hunger
+		self.m_iSocial = social
 
 
 	def Update(self):
@@ -124,3 +129,6 @@ class Miner(BaseGameEntity):
 
 		if not self.m_bPocketsFull and self.m_iGoldCarried >= 200:
 			self.m_bPocketsFull = True
+
+		if self.m_bLonely and not self.m_bMeeting:
+			MessageDispatcher.DispatchMessage(self.m_ID, "all", 0, {"call": "meet", "place":"Bar"})
