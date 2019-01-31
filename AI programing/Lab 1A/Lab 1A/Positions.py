@@ -1,10 +1,11 @@
 class Position():
 	pos = {
-		"Home":(45, 45),
-		"Mine":(250, 250),
-		"Field":(455, 45),
-		"Bank":(455, 455),
-		"Bar":(45, 455)
+		"Home":		(45	, 45	),
+		"Mine":		(200, 120	),
+		"Field":	(200, 45	),
+		"Bank":		(120, 45	),
+		"Bar":		(120, 120	),
+		"Store":	(45, 120	)
 		}
 
 	def Position(position):

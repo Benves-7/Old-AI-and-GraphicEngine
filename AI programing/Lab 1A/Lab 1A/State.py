@@ -2,88 +2,124 @@ import Positions
 import time
 import os
 import Graphics
+from 
 from math import *
 
 #Bilip was here (:
 
 class State():
-    
-    def Enter(self):
-        return 0
-    def Execute(self):
-        return 0
-    def Exit(self):
-        return 0
 
-def GoTowards(miner, pos):
-    # walks toward pos, returns whether person is at pos.
-	x = Positions.Position.pos.get(pos)[0]
-	y = Positions.Position.pos.get(pos)[1]
-	distX = miner.m_tPos[0] - Positions.Position.pos.get(pos)[0]
-	distY = miner.m_tPos[1] - Positions.Position.pos.get(pos)[1]
-	v = atan2(distX, distY)
-	dx = -cos(v)*miner.m_iSpeed
-	dy = -sin(v)*miner.m_iSpeed
-	
-	if abs(dx) > abs(distX):
-		dx = -distX
-	if abs(dy) > abs(distY):
-		dy = -distY
-	
-	if abs(dx) == 0 and dy != 0:
-		dy = v/miner.m_iSpeed
-	if abs(dy) == 0 and dx != 0:
-		dx = v/miner.m_iSpeed
+	def Enter(self):
+		return 0
+	def Execute(self):
+		return 0
+	def Exit(self):
+		return 0
+	def MessageRecieved(self, message):
+		#Another agent wants to meet with this agent
+		if message["message"]["call"] == "meet":
+			#If the agent is lonely enought it will accept the request
+			if message["header"]["receiver"].loneliness > 50:
+				#The agent wants to meet, starts walking to the destination
+				message["header"]["receiver"].locationGoTo = message["message"]["place"]
+				message["header"]["receiver"].nextState = Waiting()
+				message["header"]["receiver"].changeState(Walking())
+				print("Okej!")
+				#Sends a message to the sender to confirm that the agent wants to meet.
+				MessageDispatcher.DispatchMessage(message["header"]["receiver"].entity_ID, message["header"]["sender"].entity_ID, 0, {"call" : "anwser", "place" : message["message"]["place"]})
 
-	if abs(dx) > abs(distX):
-		dx = -distX
-	if abs(dy) > abs(distY):
-		dy = -distY
+		elif message["message"]["call"] == "anwser":
+			#The other agent want's to meet. Starts walking to the destination.
+			print(str(message["header"]["receiver"].entity_ID)+ ": JAA")
+			message["header"]["receiver"].locationGoTo = message["message"]["place"]
+			message["header"]["receiver"].nextState = Waiting()
+			message["header"]["receiver"].changeState(Walking())
+			return
 
-	tPos = (miner.m_tPos[0] + dx, miner.m_tPos[1] + dy)
-	miner.m_tPos = tPos
-	miner.m_Text.undraw()
-	miner.m_PTpos.move(dx,dy)
-	miner.m_Text = Graphics.Text(miner.m_PTpos, miner.m_Name)
-	miner.m_Text.draw(miner.m_gWindow)
-	if miner.m_tPos[0] ==  Positions.Position.pos.get(pos)[0] and miner.m_tPos[1] == Positions.Position.pos.get(pos)[1]:
-		return True
-	else:
-		return False
+		elif message["message"]["call"] == "arrived":
+			# Tells the other agent that you have arrived. 
+			# If the other agent have arrived, start talking.
+		    # Othervise wait until the other agent arrives or 
+		    # cancels the meeting or if you the current agent needs to do something else.
+			return
 
 class Home(State):
-    def Exit(self, miner):
-        miner.m_Doing = "Leaving Home!"
+	def Exit(self, miner):
+		miner.m_Doing = "Leaving Home!"
 
-    def Execute(self, miner):
-        miner.ChangeState(Working)
+	def Execute(self, miner):
+		miner.ChangeState(Working)
 
 class Working(State):
 
 	def Enter(miner):
-		miner.m_Location = "Mine"
-		miner.m_Doing = "Moving to Mine"
+		if miner.m_bSpade:
+			miner.m_Location = "Mine"
+			miner.m_Doing = "Moving to Mine"
+		else:
+			miner.m_Location = "Field"
+			miner.m_Doing = "Moving to Field"
 
 	def Execute(miner):
-		if GoTowards(miner, miner.m_Location):
-			miner.m_Doing = "Mining"
-			miner.m_iFatige += 4
-			miner.m_iGoldCarried += 2
+		if miner.GoTowards():
+			if miner.m_bSpade:
+				miner.m_Doing = "Mining"
+				miner.m_iFatige += 4
+				miner.m_iGoldCarried += 5
+			else:
+				miner.m_Doing = "Working the fields (of golden)"
+				miner.m_iFatige += 2
+				miner.m_iGoldCarried += 2
 
-		if miner.m_iGoldCarried >= 200:
+		if miner.m_iMoneyInBank >= 700 and not miner.m_bSpade:
+			miner.ChangeState(Shopping)
+			return 0
+		
+		if miner.m_bPocketsFull :
 			miner.ChangeState(Banking)
+			return 0
 
-		if miner.m_iFatige >= 1000:
+		if miner.m_bTired and not miner.m_bHungry and not miner.m_bThirsty:
 			miner.ChangeState(Sleeping)
+			return 0
 			
-		if miner.m_iThirst >= 2000:
+		if miner.m_bThirsty and miner.m_bGotMoney:
 			miner.ChangeState(Drinking)
+			return 0
 
-		if miner.m_iHunger >= 1000:
+		if miner.m_bHungry and miner.m_bGotFood:
 			miner.ChangeState(Eating)
-	
+			return 0
+		elif miner.m_bHungry and not miner.m_bGotFood and miner.m_bGotMoney:
+			miner.ChangeState(Shopping)
+			return 0
+
+
+
 	def Exit(miner):
-		miner.m_Doing = "Leaving Mine!"
+		miner.m_Doing = "Leaving Work!"
+
+class Shopping(State):
+	def Enter(miner):
+		miner.m_Location = "Store"
+		miner.m_Doing = "Moving to Store"
+
+	def Execute(miner):
+		if miner.GoTowards():
+			if miner.m_bHungry and miner.m_bGotMoney:
+				miner.m_iFood += 10
+				miner.m_iMoneyInBank -= 75
+				miner.ChangeState(Eating)
+				return 0
+
+			if not miner.m_bSpade and miner.m_iMoneyInBank > 500:
+				miner.m_bSpade = True
+				miner.m_iMoneyInBank -= 500
+				miner.ChangeState(Working)
+				return 0
+
+	def Exit(miner):
+		miner.m_Doing = "Leaving Store!"
 
 class Sleeping(State):
 	def Enter(miner):
@@ -91,17 +127,17 @@ class Sleeping(State):
 		miner.m_Doing = "Moving to Home"
 
 	def Execute(miner):
-		if GoTowards(miner, miner.m_Location):
+		if miner.GoTowards():
 			miner.m_Doing = "Sleeping (zZz)"
 			miner.m_iFatige -= 25
 
 		if miner.m_iFatige <= 0:
 			miner.m_iFatige = 0
+			miner.m_bTired = False
 
-		if miner.m_iFatige == 0 and miner.m_iGoldCarried < 200:
+		if not miner.m_bTired and miner.m_iGoldCarried < 200:
 			miner.ChangeState(Working)
-		if miner.m_iFatige == 0 and miner.m_iGoldCarried >= 200:
-			miner.ChangeState(Banking)
+			return 0
 
 	def Exit(miner):
 		miner.m_Doing = "Leaving Home!"
@@ -112,11 +148,13 @@ class Banking(State):
 		miner.m_Doing = "Moving to Bank"
 
 	def Execute(miner):
-		if GoTowards(miner, miner.m_Location):
+		if miner.GoTowards():
 			miner.m_Doing = "Banking"
 			miner.m_iMoneyInBank += miner.m_iGoldCarried
 			miner.m_iGoldCarried = 0
+			miner.m_bPocketsFull = False
 			miner.ChangeState(Working)
+			return 0
 
 	def Exit(miner):
 		miner.m_Doing = "Leaving Bank!"
@@ -127,19 +165,21 @@ class Drinking(State):
 		miner.m_Doing = "Moving to Bar"
 
 	def Execute(miner):
-		if GoTowards(miner, miner.m_Location):
+		if miner.GoTowards():
 			miner.m_Doing = "Drinking"
-			if miner.m_iMoneyInBank - 1 >= 0:
+			if miner.m_bGotMoney:
 				miner.m_iThirst -= 25
 				miner.m_iMoneyInBank -= 10
-			if miner.m_iThirst < 0:
+			if miner.m_iThirst <= 0:
 				miner.m_iThirst = 0
-		if miner.m_iThirst == 0 and miner.m_iGoldCarried < 100:
+				miner.m_bThirsty = False
+
+		if not miner.m_bThirsty:
 			miner.ChangeState(Working)
-		if miner.m_iThirst == 0 and miner.m_iGoldCarried >= 100:
-			miner.ChangeState(Banking)
-		if miner.m_iMoneyInBank <= 0:
+			return 0
+		if not miner.m_bGotMoney:
 			miner.ChangeState(Working)
+			return 0
 
 	def Exit(miner):
 		miner.m_Doing = "Leaving Bar!"
@@ -150,27 +190,34 @@ class Eating(State):
 		miner.m_Doing = "Moving to Home"
 
 	def Execute(miner):
-		if GoTowards(miner, miner.m_Location):
+		if miner.GoTowards():
 			miner.m_Doing = "Eating"
-			if miner.m_iMoneyInBank - 5 >= 0:
-				miner.m_iHunger -= 50
-				miner.m_iThirst -= 10
-				miner.m_iMoneyInBank -= 5
+			if miner.m_bGotFood:
+				miner.m_iHunger -= 150
+				miner.m_iFood -= 1
 
 		if miner.m_iHunger <= 0:
 			miner.m_iHunger = 0
+			miner.m_bHungry = False
+
+		if not miner.m_bHungry:
 			miner.ChangeState(Working)
+			return 0
+
+		if not miner.m_bGotMoney:
+			miner.ChangeState(Working)
+			return 0
 
 	def Exit(miner):
 		miner.m_Doing = "Leaving Home"
 
 class Dead(State):
-    def Enter(miner):
-        miner.m_Location = "Ground"
-        miner.m_Doing = "Dying"
+	def Enter(miner):
+		miner.m_Location = "Ground"
+		miner.m_Doing = "Dying"
 
-    def Execute(miner):
-        miner.m_Doing = "Dying"
+	def Execute(miner):
+		miner.m_Doing = "Dying"
 
-    def Exit(miner):
-        miner.m_Doint = "Dying"
+	def Exit(miner):
+		miner.m_Doint = "Dying"
