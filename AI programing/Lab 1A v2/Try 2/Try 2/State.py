@@ -3,6 +3,7 @@ import time
 import os
 import Graphics
 import BaseGameEntity
+from EntityManager import *
 from MessageDispatcher import *
 from math import *
 
@@ -19,17 +20,34 @@ class State():
 		#Another agent wants to meet with this agent
 		if message["message"]["call"] == "meet":
 			#If the agent is lonely enought it will accept the request
-			if message["header"]["receiver"].m_iSocial > 1000:
 				#The agent wants to meet, starts walking to the destination
+			if message["header"]["receiver"].m_iSocial > 1000 and not message["header"]["receiver"].m_bHungry and not message["header"]["receiver"].m_bThirsty and not message["header"]["receiver"].m_bTired:
 				message["header"]["receiver"].ChangeState(Meeting)
 				message["header"]["receiver"].m_bLonely = True
+				message["header"]["receiver"].m_bGoingToMeeting = True
 				#Sends a message to the sender to confirm that the agent wants to meet.
-				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : message["message"]["place"]})
+				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : "Bar"})
+				return
+			#END OF DAY "#!¤%!¤ LOSING MY MIND... START HERE!
+			if message["header"]["receiver"].m_iSocial > 1000 and message["header"]["receiver"].m_bHungry:
+				message["header"]["receiver"].ChangeState(Meeting)
+				message["header"]["receiver"].m_bLonely = True
+				message["header"]["receiver"].m_bGoingToMeeting = True
+				#Sends a message to the sender to confirm that the agent wants to meet.
+				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : "Diner"})
+				return
+
+			else:
+				# Send delayed message to self to check again?
+				pass
+
 
 		elif message["message"]["call"] == "anwser":
+			if message["header"]["receiver"].m_bGoingToMeeting or message["header"]["receiver"].m_bAtMeeting:
+			    return
 			#The other agent want's to meet. Starts walking to the destination.
 			message["header"]["receiver"].ChangeState(Meeting)
-
+			message["header"]["receiver"].m_bGoingToMeeting = True
 			return
 
 		elif message["message"]["call"] == "arrived":
@@ -38,8 +56,10 @@ class State():
 		    # Othervise wait until the other agent arrives or 
 		    # cancels the meeting or if you the current agent needs to do something else.
 			return
+
 		elif message["message"]["call"] == "leaving":
 			message["header"]["receiver"].ChangeState(Working)
+			return
 
 class Home(State):
 	def Exit(self, miner):
@@ -52,14 +72,16 @@ class Meeting(State):
 
 	peopleHere = {}  # Starta här.
 
+
 	def Enter(miner):
 			miner.m_Location = "Bar"
 			miner.m_Doing = "Moving to Bar - Meeting"
 
 	def Execute(miner):
 		if miner.GoTowards():
+			miner.m_bGoingToMeeting = False
 			if miner.m_ID not in Meeting.peopleHere:
-				Meeting.peopleHere.append(miner.m_ID)
+				Meeting.peopleHere[miner.m_ID] = EntityManager.getEntityFromId(miner.m_ID)
 			miner.m_Doing = "Meeting friends."
 			miner.m_bAtMeeting = True
 			if len(Meeting.peopleHere) > 1:
@@ -80,10 +102,14 @@ class Meeting(State):
 
 	def Exit(miner):
 		if miner.m_ID in Meeting.peopleHere:
-			Meeting.peopleHere.remove(miner.m_ID)
-			for x in Meeting.peopleHere:
-				MessageDispatcher.DispatchMessage(miner.m_ID, x, 0, {"call" : "leaving"})
-
+			Meeting.peopleHere.pop(miner.m_ID)
+			if len(Meeting.peopleHere) < 2:
+				i = 0
+				while i < len(Meeting.peopleHere):
+					MessageDispatcher.DispatchMessage(miner.m_ID, Meeting.peopleHere[i].m_ID, 0, {"call" : "leaving"})
+					i += 1
+		if miner.m_iSocial < 1500:
+			miner.m_bLonely = False
 		miner.m_bAtMeeting = False
 
 

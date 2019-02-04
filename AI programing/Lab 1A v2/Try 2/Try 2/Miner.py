@@ -44,6 +44,7 @@ class Miner(BGE):
 	m_bGotMoney = False
 	m_bPocketsFull = False
 	m_bAtMeeting = False
+	m_bGoingToMeeting = False
 
 	def __init__(self, name, window, social = 0, thirst = 0, fatige = 0, hunger = 0, goldCarried = 0, moneyInBank = 0):
 		self.m_Name = name
@@ -130,5 +131,5 @@ class Miner(BGE):
 		if not self.m_bPocketsFull and self.m_iGoldCarried >= 200:
 			self.m_bPocketsFull = True
 
-		if self.m_bLonely and not self.m_bAtMeeting:
+		if self.m_bLonely and (not self.m_bGoingToMeeting and not self.m_bAtMeeting):
 			MessageDispatcher.DispatchMessage(self.m_ID, "all", 0, {"call": "meet", "place":"Bar"})

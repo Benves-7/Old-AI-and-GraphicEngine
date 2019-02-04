@@ -17,6 +17,7 @@ class MessageDispatcher:
 			receiverEntity = EntityManager.getEntityFromId(receiver)
 			telegram = {"header" : {"sender" : senderEntity, "receiver": receiverEntity, "delay" : delay}, "message" : message}
 			MessageDispatcher.send(telegram, receiverEntity)
+
 	def DispatchDelayedMessages():
 		return
 
