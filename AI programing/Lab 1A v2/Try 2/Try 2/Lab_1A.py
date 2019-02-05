@@ -5,6 +5,7 @@ from Miner import *
 import time
 import os
 from math import *
+from TimeManager import *
 
 # Making the map.
 m_lPos = Positions.Position.pos.keys()
@@ -24,23 +25,8 @@ miners = [
 
 # Update loop (Game loop)
 while True:
-
-	#clear = lambda: os.system('cls')
-	#clear()
-	#for miner in miners:
-	#	print(miner.m_Name + " stats: ")
-	#	print("Doing:		" + str(miner.m_Doing)) 
-	#	print("Location:	" + str(ceil(miner.m_tPos[0])) + "," + str(ceil(miner.m_tPos[1])))
-	#	print("Gold:		" + str(miner.m_iGoldCarried))
-	#	print("Money:		" + str(miner.m_iMoneyInBank))
-	#	print("Food:		" + str(miner.m_iFood))
-	#	print("Thirst:		" + str(miner.m_bThirsty) + " : " + str(miner.m_iThirst))
-	#	print("Fatige:		" + str(miner.m_bTired) +  " : " + str(miner.m_iFatige))
-	#	print("Social:		" + str(miner.m_bLonely) +  " : " + str(miner.m_iSocial))
-	#	print("Hunger:		" + str(miner.m_bHungry) +  " : " + str(miner.m_iHunger))
-	#	print("Spade:		" + str(miner.m_bSpade))
-
-	#	print("-------------------------------------")
-
-	for miner in miners:
-		miner.Update()
+	if not TimeManager.isPaused:
+		for miner in miners:
+			miner.Update()
+		TimeManager.tick += 1
+	time.sleep(TimeManager.UpdateDelay)
