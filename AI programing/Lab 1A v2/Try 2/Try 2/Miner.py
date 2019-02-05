@@ -131,6 +131,5 @@ class Miner(BGE):
 		if not self.m_bPocketsFull and self.m_iGoldCarried >= 200:
 			self.m_bPocketsFull = True
 		
-		# Om ensam och inte påväg eller inte där.
 		if self.m_bLonely and not(self.m_bGoingToMeeting or self.m_bAtMeeting):
 			MessageDispatcher.DispatchMessage(self.m_ID, "all", 0, {"call": "meet", "place":"Bar"})

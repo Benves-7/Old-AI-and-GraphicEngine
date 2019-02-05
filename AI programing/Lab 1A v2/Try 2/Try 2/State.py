@@ -17,51 +17,41 @@ class State():
 		return 0
 
 	def MessageRecieved(self, message):
+		
 		#Another agent wants to meet with this agent
 		if message["message"]["call"] == "meet":
 			#If the agent is lonely enought it will accept the request
 			#The agent wants to meet, starts walking to the destination depending on other needs.
-			if message["header"]["receiver"].m_iSocial > 1000 and not message["header"]["receiver"].m_bHungry and not message["header"]["receiver"].m_bThirsty and not message["header"]["receiver"].m_bTired:
-				message["header"]["receiver"].m_Location = "Bar"
-				message["header"]["receiver"].ChangeState(Meeting)
-				message["header"]["receiver"].m_bLonely = True
-				#Sends a message to the sender to confirm that the agent wants to meet.
-				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : "Bar"})
-				return
-			
-			if message["header"]["receiver"].m_iSocial > 1000 and message["header"]["receiver"].m_bHungry:
+			if message["header"]["receiver"].m_iSocial > 1000 and not message["header"]["receiver"].m_bTired:
+				print(message["header"]["sender"].m_Name + ": hej " + message["header"]["receiver"].m_Name + " vill du träffas?")
+				print(message["header"]["receiver"].m_Name + ": Ja, kanske på resturangen?")
 				message["header"]["receiver"].m_Location = "Diner"
 				message["header"]["receiver"].ChangeState(Meeting)
+				message["header"]["receiver"].m_bGoingToMeeting = True
 				message["header"]["receiver"].m_bLonely = True
 				#Sends a message to the sender to confirm that the agent wants to meet.
 				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : "Diner"})
 				return
-
-			if message["header"]["receiver"].m_iSocial > 1000 and message["header"]["receiver"].m_bThirsty:
-				message["header"]["receiver"].m_Location = "Bar"
-				message["header"]["receiver"].ChangeState(Meeting)
-				message["header"]["receiver"].m_bLonely = True
-				#Sends a message to the sender to confirm that the agent wants to meet.
-				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "anwser", "place" : "Bar"})
-				return
-
-
-
 			else:
-				# Send delayed message to self to check again?
 				pass
 
 
 		elif message["message"]["call"] == "anwser":
 			if message["header"]["receiver"].m_bGoingToMeeting or message["header"]["receiver"].m_bAtMeeting:
+				if not message["header"]["receiver"].m_Location == message["message"]["place"]:
+					print(message["header"]["receiver"].m_Name + ": påväg till " + message["header"]["receiver"].m_Location + " för att umgås, kom dit!" )
 				MessageDispatcher.DispatchMessage(message["header"]["receiver"].m_ID, message["header"]["sender"].m_ID, 0, {"call" : "correction", "place" : message["header"]["receiver"].m_Location})
 				return
 			#The other agent want's to meet. Starts walking to the destination.
 			message["header"]["receiver"].m_Location = message["message"]["place"]
 			message["header"]["receiver"].ChangeState(Meeting)
+			message["header"]["receiver"].m_bGoingToMeeting = True
 			return
+
 		elif message["message"]["call"] == "correction":
 			message["header"]["receiver"].m_Location = message["message"]["place"]
+			message["header"]["receiver"].m_bGoingToMeeting = True
+
 		elif message["message"]["call"] == "arrived":
 			# Tells the other agent that you have arrived. 
 			# If the other agent have arrived, start talking.
@@ -72,6 +62,7 @@ class State():
 		elif message["message"]["call"] == "leaving":
 			message["header"]["receiver"].ChangeState(Working)
 			return
+
 
 class Home(State):
 	def Exit(self, miner):
@@ -99,12 +90,12 @@ class Meeting(State):
 			miner.m_Doing = "Meeting friends."
 			if len(Meeting.peopleHere) > 1:
 				miner.m_iSocial -= 10
-			if miner.m_Location == "Bar" and miner.m_bThirsty and miner.m_iThirst - 25 >= 0:
-				miner.m_iThirst -= 25
-				miner.m_bThirsty = False
-			if miner.m_Location == "Diner" and miner.m_bHungry and miner.m_iHunger - 150 >= 0:
+			if miner.m_bHungry and miner.m_iHunger - 150 >= 0:
 				miner.m_iHunger -= 150
 				miner.m_bHungry = False
+			if miner.m_bThirsty and miner.m_iThirst - 25 >= 0:
+				miner.m_iThirst -= 25
+				miner.m_bThirsty = False
 			if miner.m_iSocial <= 0:
 				miner.m_iSocial = 0
 				miner.m_bLonely = False
@@ -112,21 +103,17 @@ class Meeting(State):
 		if not miner.m_bLonely:
 			miner.ChangeState(Working)
 			return
-		if miner.m_bHungry and not miner.m_Location == "Diner":
-			miner.ChangeState(Eating)
-			return
-		if miner.m_bThirsty and not miner.m_Location == "Bar":
-			miner.ChangeState(Drinking)
-			return
-
 
 	def Exit(miner):
 		if miner.m_ID in Meeting.peopleHere:
 			Meeting.peopleHere.pop(miner.m_ID)
-			if len(Meeting.peopleHere) < 2:
+			if len(Meeting.peopleHere) < 2 and not len(Meeting.peopleHere) == 0:
 				i = 0
+				peoplehere = list(Meeting.peopleHere.keys())
+				for people in peoplehere:
+					MessageDispatcher.DispatchMessage(miner.m_ID, Meeting.peopleHere[people].m_ID, 0, {"call" : "leaving"})
+
 				while i < len(Meeting.peopleHere):
-					MessageDispatcher.DispatchMessage(miner.m_ID, Meeting.peopleHere[i].m_ID, 0, {"call" : "leaving"})
 					i += 1
 		if miner.m_iSocial < 1500:
 			miner.m_bLonely = False
@@ -296,6 +283,7 @@ class Eating(State):
 
 class Dead(State):
 	def Enter(miner):
+		print(miner.m_Name + ": dead!")
 		miner.m_Location = "Ground"
 		miner.m_Doing = "Dying"
 
