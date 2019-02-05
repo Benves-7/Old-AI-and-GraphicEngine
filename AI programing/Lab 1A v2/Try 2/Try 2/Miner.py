@@ -61,7 +61,7 @@ class Miner(BGE):
 
 
 	def Update(self):
-		if self.m_iHunger >= 2000 or self.m_iThirst >= 3000:
+		if self.m_iHunger >= 3000 or self.m_iThirst >= 4000:
 			self.ChangeState(Dead)
 			self.m_pCurrentState.Execute(self)
 			return
@@ -130,6 +130,7 @@ class Miner(BGE):
 
 		if not self.m_bPocketsFull and self.m_iGoldCarried >= 200:
 			self.m_bPocketsFull = True
-
-		if self.m_bLonely and (not self.m_bGoingToMeeting and not self.m_bAtMeeting):
+		
+		# Om ensam och inte påväg eller inte där.
+		if self.m_bLonely and not(self.m_bGoingToMeeting or self.m_bAtMeeting):
 			MessageDispatcher.DispatchMessage(self.m_ID, "all", 0, {"call": "meet", "place":"Bar"})

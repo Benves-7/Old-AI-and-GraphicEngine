@@ -16,7 +16,7 @@ for name in m_lPos:
 
 # Making miners.
 miners = [ 
-	Miner("Bob", Window, 1480),
+	Miner("Bob", Window),
 	Miner("Jonny", Window, 0, 800, 0, 1000),
 	Miner("Billy", Window, 1100, 0, 800, 0),
 	Miner("Konny", Window, 0, 0, 0, 800, 0, 200)

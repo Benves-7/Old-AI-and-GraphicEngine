@@ -8,8 +8,8 @@ from math import *
 
 # Making the map.
 m_lPos = Positions.Position.pos.keys()
-Window = Graphics.GraphWin("Window", 250, 180)
-#Window.master.geometry("+2200+42")
+Window = Graphics.GraphWin("Window", 300, 250)
+Window.master.geometry("+2200+42")
 for name in m_lPos:
 	point = Graphics.Point(Positions.Position.pos.get(name)[0],Positions.Position.pos.get(name)[1])
 	Graphics.Text(point, name).draw(Window)
