@@ -18,6 +18,4 @@ def Test_on_Map3():
 	window.DrawGrid(map3)
 
 Test_on_Map1()
-Test_on_Map2()
-Test_on_Map3()
 print("...")

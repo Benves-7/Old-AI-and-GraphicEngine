@@ -17,7 +17,10 @@ class Window:
 		
 		for y in range (0, map.heigth):
 			for x in range(0, map.width):
+				index = x + (y * map.width)
 				a = Rectangle(Point(x*indent_X, y*indent_Y), Point(x * indent_X + indent_X, y * indent_Y + indent_Y))
-				a.setFill(color_rgb(map.grid[x + (y * map.width)].color[0], map.grid[x + (y * map.width)].color[1], map.grid[x + (y * map.width)].color[2]))
-
+				a.setFill(color_rgb(map.grid[index].color[0], map.grid[index].color[1], map.grid[index].color[2]))
+				b = Text(a.getCenter(), str(map.grid[x + (y * map.width)].id))
 				a.draw(self.window)
+				if map.grid[index].isWalkable:
+				   b.draw(self.window) 
