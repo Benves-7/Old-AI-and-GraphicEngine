@@ -28,6 +28,9 @@
     <Compile Include="MapLoader.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PathFinder.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PathTester.py" />
     <Compile Include="Window.py">
       <SubType>Code</SubType>

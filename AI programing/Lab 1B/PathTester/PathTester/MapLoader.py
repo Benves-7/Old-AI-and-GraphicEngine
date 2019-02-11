@@ -27,14 +27,39 @@ class Map:
 					self.grid.append(Node(True, False, True, (0, 255, 0), self.nextID))
 				self.nextID += 1
 
+	def FindNeighbours(self, id):
+		neighbours = []
+		if self.grid[id - 1].isWalkable:
+			neighbours.append(id - 1)
+		if self.grid[id + 1].isWalkable:
+			neighbours.append(id + 1)
+		if self.grid[id - self.width].isWalkable:
+			neighbours.append(id - self.width)
+		if self.grid[id + self.width].isWalkable:
+			neighbours.append(id + self.width)
+		return neighbours
+
 class Node():
 
+	# Nodes checked.
+	up = False
+	down = False
+	left = False
+	right = False
+
+	# Type of node.
 	isWalkable = False
 	isSpawn = False
 	isGoal = False
-	nextId = 0
+
+	# Identifer.
 	id = 0
 	color = ()
+	x = 0
+	y = 0
+
+	# centerpoint.
+	center = None
 
 	def __init__(self, walkable, spawn, goal, color, id = 0):
 		self.isWalkable = walkable
