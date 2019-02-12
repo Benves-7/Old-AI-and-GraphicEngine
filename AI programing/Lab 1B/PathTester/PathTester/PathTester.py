@@ -34,18 +34,18 @@ def Test(type = "", mapname = ""):
 	print(type + " on " + mapname[0:3] + " " + mapname[3] + " Steps = " + str(len(path)) + " in " + str(t) + "s.")
 	print("----------------------------------------------")
 
-#Test("A-Star", "Map1.txt")
-#Test("A-Star", "Map2.txt")
-#Test("A-Star", "Map3.txt")
+Test("A-Star", "Map1.txt")
+Test("A-Star", "Map2.txt")
+Test("A-Star", "Map3.txt")
 
-#Test("BreadthFirst","Map1.txt")
-#Test("BreadthFirst", "Map2.txt")
-#Test("BreadthFirst", "Map3.txt")
+Test("BreadthFirst","Map1.txt")
+Test("BreadthFirst", "Map2.txt")
+Test("BreadthFirst", "Map3.txt")
 
 Test("DepthFirst", "Map1.txt")
 Test("DepthFirst", "Map2.txt")
 Test("DepthFirst", "Map3.txt")
 
-#Test("Own", "Map1.txt")
-#Test("Own", "Map2.txt")
-#Test("Own", "Map3.txt")
+Test("Own", "Map1.txt")
+Test("Own", "Map2.txt")
+Test("Own", "Map3.txt")
