@@ -8,11 +8,11 @@ class Window:
 	indent_X = None
 	indent_Y = None
 
-	def __init__(self):
-		self.MakeWindow()
+	def __init__(self, name):
+		self.MakeWindow(name)
 
-	def MakeWindow(self):
-		self.window = GraphWin("pathtest", self.width, self.heigth)
+	def MakeWindow(self, name):
+		self.window = GraphWin(name, self.width, self.heigth)
 		self.window.master.geometry("+2000-400")
 
 	def DrawGrid(self, map):
@@ -31,6 +31,7 @@ class Window:
 				if node.isWalkable:
 					b = Text(node.center, str(node.id))
 					b.draw(self.window)
+		return
 
 	def DrawPath(self, path):
 		for step in path:
@@ -41,10 +42,29 @@ class Window:
 					a.draw(self.window)
 					b = Text(node.center, str(node.id))
 					b.draw(self.window)
+		return
 
-	def DrawNode(self, currentNode, color):
+	def DrawPathFCost(self, path):
+		for step in path:
+			for node in self.map.grid:
+				if step == node.id:
+					a = Circle(node.center, self.indent_X / 2)
+					a.setFill("yellow")
+					a.draw(self.window)
+					b = Text(node.center, int(node.f))
+					b.draw(self.window)
+		return
+	
+	def DrawNode(self, currentNode, color, text = 0):
 		a = Circle(self.map.grid[currentNode].center, self.indent_X/2)
 		a.setFill(color)
 		a.draw(self.window)
 		b = Text(self.map.grid[currentNode].center, str(self.map.grid[currentNode].id))
+		b.draw(self.window)
+		
+	def DrawNodeFCost(self, currentNode, color, text):
+		a = Circle(self.map.grid[currentNode].center, self.indent_X/2)
+		a.setFill(color)
+		a.draw(self.window)
+		b = Text(self.map.grid[currentNode].center, str(text))
 		b.draw(self.window)

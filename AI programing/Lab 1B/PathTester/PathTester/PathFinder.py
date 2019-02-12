@@ -44,6 +44,7 @@ def A_Star(map, window, start_node = None, end_node = None):
 	while len(open_list) > 0:
 
 		# Get the current node.
+
 		current_node = open_list[0]
 		current_index = 0
 		for index, item in enumerate(open_list):
@@ -67,68 +68,15 @@ def A_Star(map, window, start_node = None, end_node = None):
 
 		# Generate children
 		children = []
-		checkdiag = [-map.width - 1, -map.width + 1, map.width + 1, map.width - 1]
-		for new_position in [-1, 1, -map.width, map.width]: # -map.width - 1, -map.width + 1, map.width + 1, map.width - 1
-			
-			# Get node position
-			node_position = (current_node.position + new_position)
-
-			# Make sure within range
-			if node_position > len(map.grid) - 1 or node_position < 0:
-				continue
-
-			# Make sure walkable terrain
-			if not map.grid[node_position].isWalkable:
-				if new_position == -1:
-					try:
-						checkdiag.remove(-map.width - 1)
-						checkdiag.remove(map.width - 1)
-					except :
-						pass
-				elif new_position == 1:
-					try:
-						checkdiag.remove(-map.width + 1)
-						checkdiag.remove(map.width + 1)
-					except :
-						pass
-				elif new_position == -map.width:
-					try:
-						checkdiag.remove(-map.width + 1)
-						checkdiag.remove(-map.width - 1)
-					except :
-						pass
-				elif new_position == map.width:
-					try:
-						checkdiag.remove(map.width - 1)
-						checkdiag.remove(map.width + 1)
-					except :
-						pass
-				continue
-
-			# Create new node
-			new_node = Node(current_node, node_position)
+		neighbours = map.FindNeighboursA_Star(current_node.position)
+		for node_position in neighbours:
 
 			# Append
-			children.append(new_node)
-		for new_position in checkdiag:
-			# Get node position
-			node_position = (current_node.position + new_position)
-
-			# Make sure within range
-			if node_position > len(map.grid) - 1 or node_position < 0:
-				continue
-
-			# Make sure walkable terrain
-			if not map.grid[node_position].isWalkable:
-				continue
-
-			# Create new node
-			new_node = Node(current_node, node_position)
-
-			# Append
-			children.append(new_node)
+			children.append(Node(current_node, node_position))
 
 		# Loop through children
+		#window.DrawNode(current_node.position, "red", int(current_node.f))
+		neighbours = []
 		for child in children:
 
 			# Child is on the closed list.
@@ -137,24 +85,21 @@ def A_Star(map, window, start_node = None, end_node = None):
 
 			# Create the f, g and h values
 			if child.position == current_node.position +1 or child.position == current_node.position -1 or child.position == current_node.position + map.width or child.position == current_node.position - map.width:
-				child.g = current_node.g + 1
+				child.g = current_node.g + 10
 			else:
-				child.g = current_node.g + 1.4
-			child.h = ((map.grid[child.position].x - map.grid[end_node.position].x)**2) + ((map.grid[child.position].y - map.grid[end_node.position].y) **2)
+				child.g = current_node.g + 14
+			
+			child.h = ((abs(map.grid[child.position].x - map.grid[end_node.position].x)*10)) + ((abs(map.grid[child.position].y - map.grid[end_node.position].y) *10))
 			child.f = child.g + child.h
 
 			# Child is already in the open list
-			if child in open_list:
-				if child.g > open_list[open_list.index(child)].g:
+			if child in open_list and child.g > open_list[open_list.index(child)].g:
 					continue
-
 			# Add the cild to the open list
 			open_list.append(child)
 			
-			window.DrawNode(child.position, "green")
-
-		window.DrawNode(current_node.position, "red")
-		k = "k"
+			#window.DrawNode(child.position, "green", int(child.f))
+			map.grid[child.position].f = child.f
 
 def BreadthFirst(map, window):
 
@@ -170,10 +115,10 @@ def BreadthFirst(map, window):
 	
 	while not frontier.empty():
 		current = frontier.get()
-		window.DrawNode(current, "red")
+		#window.DrawNode(current, "red")
 		for next in map.FindNeighbours(current):
 			if next not in came_from:
-				window.DrawNode(next, "green")
+				#window.DrawNode(next, "green")
 				frontier.put(next)
 				came_from[next] = current
 
@@ -185,10 +130,37 @@ def BreadthFirst(map, window):
 			path.append(start_node)
 			path.reverse()
 			return path
-
+	return
 
 def DepthFirst(map, window):
-		return
+	for node in map.grid:
+		if node.isSpawn:
+			start_node = node.id
+		elif node.isGoal:
+			end_node = node.id
+
+	stack = []
+	stack.append(start_node)
+	came_from = {}
+	came_from[start_node] = True
+	while len(stack) > 0:
+		current = stack.pop()
+		#window.DrawNode(current, "red")
+		for next in map.FindNeighbours(current):
+			if next not in came_from:
+				#window.DrawNode(next, "green")
+				stack.append(next)
+				came_from[next] = current
+
+		if current == end_node:
+			path = []
+			while current != start_node:
+				path.append(current)
+				current = came_from[current]
+			path.append(start_node)
+			path.reverse()
+			return path
+	return
 
 class PathLocatorObject():
     
@@ -223,7 +195,7 @@ class PathLocatorObject():
 			return current
 		if self.map.grid[next].isWalkable:
 			self.came_from[next] = current
-			window.DrawNode(next, "green")
+			#window.DrawNode(next, "green")
 			self.map.grid[current].up = True
 			return next
 		else:
@@ -239,7 +211,7 @@ class PathLocatorObject():
 			return current
 		if self.map.grid[next].isWalkable:
 			self.came_from[next] = current
-			window.DrawNode(next, "green")
+			#window.DrawNode(next, "green")
 			self.map.grid[current].down = True
 			return next
 		else: 
@@ -255,7 +227,7 @@ class PathLocatorObject():
 			return current
 		if self.map.grid[next].isWalkable:
 			self.came_from[next] = current
-			window.DrawNode(next, "green")
+			#window.DrawNode(next, "green")
 			self.map.grid[current].left = True
 			return next
 		else: 
@@ -271,7 +243,7 @@ class PathLocatorObject():
 			return current
 		if self.map.grid[next].isWalkable:
 			self.came_from[next] = current
-			window.DrawNode(next, "green")
+			#window.DrawNode(next, "green")
 			self.map.grid[current].right = True
 			return next
 		else: 
@@ -323,7 +295,7 @@ def PathLocator(map, window):
 			return path
 		
 		if (PLO.map.grid[current].up and PLO.map.grid[current].down and PLO.map.grid[current].left and PLO.map.grid[current].right):
-			window.DrawNode(current, "red")
+			#window.DrawNode(current, "red")
 			current = PLO.came_from[current]
 			PLO.CancelInterupts()
 		else:

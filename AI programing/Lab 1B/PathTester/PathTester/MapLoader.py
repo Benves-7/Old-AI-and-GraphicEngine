@@ -13,7 +13,6 @@ class Map:
 	def MakeMap(self, fileName):
 		list = LoadFiletoList(fileName)
 		self.width = len(list[0])
-		#self.heigth = len(list)
 		for line in list:
 			self.heigth += 1
 			for character in line:
@@ -29,14 +28,45 @@ class Map:
 
 	def FindNeighbours(self, id):
 		neighbours = []
-		if self.grid[id - 1].isWalkable:
+		if self.grid[id - 1].isWalkable: #left
 			neighbours.append(id - 1)
-		if self.grid[id + 1].isWalkable:
-			neighbours.append(id + 1)
-		if self.grid[id - self.width].isWalkable:
+		if self.grid[id - self.width].isWalkable: #up
 			neighbours.append(id - self.width)
-		if self.grid[id + self.width].isWalkable:
+		if self.grid[id + 1].isWalkable: #right
+			neighbours.append(id + 1)
+		if self.grid[id + self.width].isWalkable: #down
 			neighbours.append(id + self.width)
+		return neighbours
+
+	def FindNeighboursA_Star(self, id):
+		
+		left = False
+		right = False
+		up = False
+		down = False
+		width = self.width
+
+		neighbours = []
+		if self.grid[id - 1].isWalkable: #left
+			neighbours.append(id-1)
+			left = True
+		if self.grid[id + 1].isWalkable: #right
+			neighbours.append(id+1)
+			right = True
+		if self.grid[id - width].isWalkable: #up
+			neighbours.append(id-width)
+			up = True
+		if self.grid[id + width].isWalkable: #down
+			neighbours.append(id+width)
+			down = True
+		if self.grid[id - width + 1].isWalkable and up and right:
+			neighbours.append(id-width+1)
+		if self.grid[id - width - 1].isWalkable and up and left:
+			neighbours.append(id-width-1)
+		if self.grid[id + width + 1].isWalkable and down and right:
+			neighbours.append(id+width+1)
+		if self.grid[id + width - 1].isWalkable and down and left:
+			neighbours.append(id+width-1)
 		return neighbours
 
 class Node():
@@ -57,6 +87,7 @@ class Node():
 	color = ()
 	x = 0
 	y = 0
+	f = 0
 
 	# centerpoint.
 	center = None
