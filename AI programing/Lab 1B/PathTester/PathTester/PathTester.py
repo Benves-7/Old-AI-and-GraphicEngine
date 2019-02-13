@@ -31,7 +31,7 @@ def Test(type = "", mapname = ""):
 	
 	#for step in path:
 	#	print(step)
-	print(type + " on " + mapname[0:3] + " " + mapname[3] + " Steps = " + str(len(path)) + " in " + str(t) + "s.")
+	print(type + " on " + mapname[0:3] + " " + mapname[3] + " Steps = " + str(len(path)) + " in " + str(round(t, 4)) + "s.")
 	print("----------------------------------------------")
 
 Test("A-Star", "Map1.txt")
