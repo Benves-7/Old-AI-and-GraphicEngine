@@ -17,15 +17,15 @@
 #include "shaders.h"
 
 using namespace Oryol;
-
-struct TestApp
+struct Model
 {
-
-
+	Id mesh;
+	glm::mat4 view;
+	glm::mat4 proj;
+	glm::mat4 model;
+	glm::mat4 modelViewProj;
 
 };
-
-
 class MeshViewerApp : public App {
 public:
     AppState::Code OnInit();
@@ -45,6 +45,7 @@ private:
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
     Id mesh;
+	Id mesh2;
     glm::vec3 eyePos;
     glm::mat4 view;
     glm::mat4 proj;
@@ -108,9 +109,9 @@ const char* MeshViewerApp::meshNames[numMeshes] = {
     "Teapot"
 };
 const char* MeshViewerApp::meshPaths[numMeshes] = {
-    "msh:tiger.omsh.txt",
-    "msh:opelblitz.omsh.txt",
-    "msh:teapot.omsh.txt"
+    "root:tiger.omsh.txt",
+    "root:opelblitz.omsh.txt",
+    "root:teapot.omsh.txt"
 };
 
 const char* MeshViewerApp::shaderNames[numShaders] = {
@@ -125,8 +126,7 @@ MeshViewerApp::OnInit() {
 
     // setup IO system
     IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("msh:", ORYOL_SAMPLE_URL);
+	ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
     IO::Setup(ioSetup);
 
     // setup rendering and input system
@@ -392,7 +392,8 @@ void
 MeshViewerApp::loadMesh(const char* path) {
 
     // unload current mesh
-    if (this->curMeshLabel.IsValid()) {
+    if (this->curMeshLabel.IsValid()) 
+	{
         Gfx::DestroyResources(this->curMeshLabel);
         this->curMeshSetup = MeshSetup();
     }
@@ -401,11 +402,18 @@ MeshViewerApp::loadMesh(const char* path) {
     // object of the loaded mesh
     this->numMaterials = 0;
     this->curMeshLabel = Gfx::PushResourceLabel();
-    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
+    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) 
+	{
         this->curMeshSetup = setup;
         this->numMaterials = setup.NumPrimitiveGroups();
         this->createMaterials();
     }));
+	this->mesh2 = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup)
+	{
+		this->curMeshSetup = setup;
+		this->numMaterials = setup.NumPrimitiveGroups();
+		this->createMaterials();
+	}));
     Gfx::PopResourceLabel();
 }
 
