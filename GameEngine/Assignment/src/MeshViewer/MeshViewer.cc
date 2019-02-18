@@ -70,6 +70,7 @@ private:
     glm::mat4 model;
     glm::mat4 modelViewProj;
 
+	int selectedID = 0;
     int curMeshIndex = 0;
     static const int numMeshes = 3;
     static const char* meshNames[numMeshes];
@@ -341,79 +342,74 @@ MeshViewerApp::updateLight() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::drawUI() {
-    const char* state;
-    switch (Gfx::QueryResourceInfo(this->models[0].drawstate.Mesh[0]).State) {
-        case ResourceState::Valid: state = "Loaded"; break;
-        case ResourceState::Failed: state = "Load Failed"; break;
-        case ResourceState::Pending: state = "Loading..."; break;
-        default: state = "Invalid"; break;
-    }
-    IMUI::NewFrame();
-    ImGui::Begin("Mesh Viewer", nullptr, ImVec2(240, 300), 0.25f, 0);
-    ImGui::PushItemWidth(130.0f);
-    //if (ImGui::Combo("##mesh", (int*) &this->curMeshIndex, this->meshNames, numMeshes)) {
-    //    this->camera = this->cameraSettings[this->curMeshIndex];
-    //    this->loadMesh(this->meshPaths[this->curMeshIndex]);
-    //}
-    //ImGui::Text("state: %s\n", state);
-    //if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
-    //    ImGui::Text("primitive groups:\n");
-    //    for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
-    //        ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
-    //    }
-    //}
+	const char* state;
+	switch (Gfx::QueryResourceInfo(this->models[0].drawstate.Mesh[0]).State) {
+	case ResourceState::Valid: state = "Loaded"; break;
+	case ResourceState::Failed: state = "Load Failed"; break;
+	case ResourceState::Pending: state = "Loading..."; break;
+	default: state = "Invalid"; break;
+	}
+	IMUI::NewFrame();
+	ImGui::Begin("Mesh Viewer", nullptr, ImVec2(240, 300), 0.25f, 0);
+	ImGui::PushItemWidth(130.0f);
+	if (ImGui::Combo("##mesh", (int*)&this->curMeshIndex, this->meshNames, numMeshes)) {
+		this->camera = this->cameraSettings[this->curMeshIndex];
+		this->loadMesh(this->meshPaths[this->curMeshIndex]);
+	}
+	ImGui::Text("state: %s\n", state);
+	if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
+		ImGui::Text("primitive groups:\n");
+		for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
+			ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
+		}
+	}
+
 	if (ImGui::SliderInt("Shapes", this->numOfShape, 0, 10, "%i"))
 	{
 
 	}
-    if (ImGui::CollapsingHeader("Camera")) {
-        ImGui::SliderFloat("Dist##cam", &this->camera.dist, minCamDist, maxCamDist);
-        ImGui::SliderFloat("Height##cam", &this->camera.height, minCamHeight, maxCamHeight);
-        ImGui::SliderAngle("Long##cam", &this->camera.orbital.y, 0.0f, 360.0f);
-        ImGui::SliderAngle("Lat##cam", &this->camera.orbital.x, minLatitude, maxLatitude);
-        ImGui::Checkbox("Auto Orbit##cam", &this->camAutoOrbit);
-        if (ImGui::Button("Reset##cam")) {
-            this->camera.dist = 8.0f;
-            this->camera.height = 1.0f;
-            this->camera.orbital = glm::vec2(0.0f, 0.0f);
-            this->camAutoOrbit = false;
-        }
-    }
-    if (ImGui::CollapsingHeader("Light")) {
-        ImGui::SliderAngle("Long##light", &this->lightOrbital.y, 0.0f, 360.0f);
-        ImGui::SliderAngle("Lat##light", &this->lightOrbital.x, minLatitude, maxLatitude);
-        ImGui::ColorEdit3("Color##light", &this->lightColor.x);
-        ImGui::SliderFloat("Intensity##light", &this->lightIntensity, 0.0f, 5.0f);
-        ImGui::Checkbox("Auto Orbit##light", &this->lightAutoOrbit);
-        ImGui::Checkbox("Gamma Correct##light", &this->gammaCorrect);
-        if (ImGui::Button("Reset##light")) {
-            this->lightOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
-            this->lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-            this->lightIntensity = 1.0f;
-            this->lightAutoOrbit = false;
-        }
-    }
-    for (int i = 0; i < this->models.Size(); i++) {
-        this->strBuilder.Format(32, "Material %d", i);
-        if (ImGui::CollapsingHeader(this->strBuilder.AsCStr())) {
-            this->strBuilder.Format(32, "shader##mat%d", i);
-            if (ImGui::Combo(strBuilder.AsCStr(), &this->materials[i].shaderIndex, this->shaderNames, numShaders)) {
-                this->createMaterials();
-            }
-            if ((Lambert == this->materials[i].shaderIndex) || (Phong == this->materials[i].shaderIndex)) {
-                this->strBuilder.Format(32, "diffuse##%d", i);
-                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[i].material.diffuse.x);
-            }
-            if (Phong == this->materials[i].shaderIndex) {
-                this->strBuilder.Format(32, "specular##%d", i);
-                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[i].material.specular.x);
-                this->strBuilder.Format(32, "power##%d", i);
-                ImGui::SliderFloat(this->strBuilder.AsCStr(), &this->models[i].material.specPower, 1.0f, 512.0f);
-            }
-        }
-    }
-    ImGui::PopItemWidth();
-    ImGui::End();
+	if (ImGui::CollapsingHeader("Camera")) {
+		ImGui::SliderFloat("Dist##cam", &this->camera.dist, minCamDist, maxCamDist);
+		ImGui::SliderFloat("Height##cam", &this->camera.height, minCamHeight, maxCamHeight);
+		ImGui::SliderAngle("Long##cam", &this->camera.orbital.y, 0.0f, 360.0f);
+		ImGui::SliderAngle("Lat##cam", &this->camera.orbital.x, minLatitude, maxLatitude);
+		ImGui::Checkbox("Auto Orbit##cam", &this->camAutoOrbit);
+		if (ImGui::Button("Reset##cam")) {
+			this->camera.dist = 8.0f;
+			this->camera.height = 1.0f;
+			this->camera.orbital = glm::vec2(0.0f, 0.0f);
+			this->camAutoOrbit = false;
+		}
+	}
+	if (ImGui::CollapsingHeader("Light")) {
+		ImGui::SliderAngle("Long##light", &this->lightOrbital.y, 0.0f, 360.0f);
+		ImGui::SliderAngle("Lat##light", &this->lightOrbital.x, minLatitude, maxLatitude);
+		ImGui::ColorEdit3("Color##light", &this->lightColor.x);
+		ImGui::SliderFloat("Intensity##light", &this->lightIntensity, 0.0f, 5.0f);
+		ImGui::Checkbox("Auto Orbit##light", &this->lightAutoOrbit);
+		ImGui::Checkbox("Gamma Correct##light", &this->gammaCorrect);
+		if (ImGui::Button("Reset##light")) {
+			this->lightOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
+			this->lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			this->lightIntensity = 1.0f;
+			this->lightAutoOrbit = false;
+		}
+	}
+	if (ImGui::CollapsingHeader("Material")) {
+		ImGui::SliderInt("id", &selectedID, 0, this->models.Size() - 1);
+		if ((Lambert == this->models[this->selectedID].material.shaderIndex) || (Phong == this->models[this->selectedID].material.shaderIndex)) {
+			this->strBuilder.Format(32, "diffuse##%d", 0);
+			ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[this->selectedID].material.diffuse.x);
+		}
+		if (Phong == this->materials[0].shaderIndex) {
+			this->strBuilder.Format(32, "specular##%d", 0);
+			ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[this->selectedID].material.specular.x);
+			this->strBuilder.Format(32, "power##%d", 0);
+			ImGui::SliderFloat(this->strBuilder.AsCStr(), &this->models[this->selectedID].material.specPower, 1.0f, 512.0f);
+		}
+	}
+	ImGui::PopItemWidth();
+	ImGui::End();
 }
 
 //-----------------------------------------------------------------------------
@@ -464,12 +460,12 @@ MeshViewerApp::loadMesh(const char* path)
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::applyVariables(int matIndex) {
-    switch (this->materials[matIndex].shaderIndex) {
+    switch (this->models[matIndex].material.shaderIndex) {
         case Normals:
             // Normals shader
             {
                 NormalsShader::vsParams vsParams;
-                vsParams.mvp = this->modelViewProj;
+                vsParams.mvp = this->modelViewProj * this->models[matIndex].transform;
                 Gfx::ApplyUniformBlock(vsParams);
             }
             break;
@@ -477,7 +473,7 @@ MeshViewerApp::applyVariables(int matIndex) {
             // Lambert shader
             {
                 LambertShader::vsParams vsParams;
-                vsParams.mvp = this->modelViewProj;
+                vsParams.mvp = this->modelViewProj * this->models[matIndex].transform;
                 vsParams.model = this->model;
                 Gfx::ApplyUniformBlock(vsParams);
 
