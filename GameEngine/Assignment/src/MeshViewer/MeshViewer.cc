@@ -393,7 +393,7 @@ MeshViewerApp::drawUI() {
             this->lightAutoOrbit = false;
         }
     }
-    for (int i = 0; i < this->numMaterials; i++) {
+    for (int i = 0; i < this->models.Size(); i++) {
         this->strBuilder.Format(32, "Material %d", i);
         if (ImGui::CollapsingHeader(this->strBuilder.AsCStr())) {
             this->strBuilder.Format(32, "shader##mat%d", i);
@@ -402,13 +402,13 @@ MeshViewerApp::drawUI() {
             }
             if ((Lambert == this->materials[i].shaderIndex) || (Phong == this->materials[i].shaderIndex)) {
                 this->strBuilder.Format(32, "diffuse##%d", i);
-                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->materials[i].diffuse.x);
+                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[i].material.diffuse.x);
             }
             if (Phong == this->materials[i].shaderIndex) {
                 this->strBuilder.Format(32, "specular##%d", i);
-                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->materials[i].specular.x);
+                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[i].material.specular.x);
                 this->strBuilder.Format(32, "power##%d", i);
-                ImGui::SliderFloat(this->strBuilder.AsCStr(), &this->materials[i].specPower, 1.0f, 512.0f);
+                ImGui::SliderFloat(this->strBuilder.AsCStr(), &this->models[i].material.specPower, 1.0f, 512.0f);
             }
         }
     }
