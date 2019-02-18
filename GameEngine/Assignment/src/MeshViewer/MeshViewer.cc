@@ -22,7 +22,7 @@ using namespace Oryol;
 
 struct ModelMesh
 {
-	Id mesh;
+	int curMeshIndex;
 	glm::mat4 transform;
 	DrawState drawstate;
 	int numMaterials;
@@ -45,19 +45,18 @@ public:
     AppState::Code OnInit();
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
-	void CreateObject(const char* path, glm::vec3 location, glm::vec4 color);
+	// own funk
+	void CreateObject(int curMeshIndex, glm::vec3 location, glm::vec4 color);
+	void ChangeObject(int curMeshIndex);
 
 private:
     void handleInput();
     void updateCamera();
     void updateLight();
     void drawUI();
-    void createMaterials();
-    void loadMesh(const char* path);
     void applyVariables(int materialIndex);
 
     int frameCount = 0;
-	int* numOfShape = new int(1);
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
     Id mesh;
@@ -72,6 +71,8 @@ private:
 
 	int selectedID = 0;
     int curMeshIndex = 0;
+	int numOfShape = 2;
+
     static const int numMeshes = 3;
     static const char* meshNames[numMeshes];
     static const char* meshPaths[numMeshes];
@@ -101,7 +102,7 @@ private:
         glm::vec2 startOrbital;
         float startDistance = 0.0f;
     } camera;
-    bool camAutoOrbit = true;
+    bool camAutoOrbit = false;
     struct CameraSetting cameraSettings[numMeshes];
 
     glm::vec2 lightOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
@@ -196,10 +197,11 @@ MeshViewerApp::OnInit() {
     this->shaders[Normals] = Gfx::CreateResource(NormalsShader::Setup());
     this->shaders[Lambert] = Gfx::CreateResource(LambertShader::Setup());
     this->shaders[Phong]   = Gfx::CreateResource(PhongShader::Setup());
-    //this->loadMesh(this->meshPaths[this->curMeshIndex]);
-	this->CreateObject(this->meshPaths[this->curMeshIndex],		glm::vec3(0, 0, 4), glm::vec4(0, 255, 0, 0));
-	this->CreateObject(this->meshPaths[this->curMeshIndex+1],	glm::vec3(4, 0, 0), glm::vec4(0, 0, 255, 0));
-	this->CreateObject(this->meshPaths[this->curMeshIndex+2],	glm::vec3(0, 0, 0), glm::vec4(255, 0, 0, 0));
+
+	for (int i = 0; i < this->numOfShape; i++)
+	{
+		this->CreateObject(this->curMeshIndex + i, glm::vec3(0 + 3*i, 0, 0), glm::vec4(0, 255, 0, 0));
+	}
 
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -214,8 +216,6 @@ MeshViewerApp::OnInit() {
     return App::OnInit();
 }
 
-
-
 //-----------------------------------------------------------------------------
 AppState::Code
 MeshViewerApp::OnRunning() {
@@ -226,12 +226,14 @@ MeshViewerApp::OnRunning() {
     this->updateLight();
 
     Gfx::BeginPass();
+	int size = this->models.Size();
 	this->drawUI();
-	for (int i = 0; i < this->models.Size(); i++)
+	for (int i = 0; i < size; i++)
 	{
 		if (this->models[i].drawstate.Pipeline.IsValid())
 		{
 			Gfx::ApplyDrawState(this->models[i].drawstate);
+			i;
 		}
 		this->applyVariables(i);
 		for (int j = 0; j < this->models[i].numMaterials; j++)
@@ -239,7 +241,6 @@ MeshViewerApp::OnRunning() {
 		Gfx::Draw(j);
 		}
 	}
-    //drawState.Mesh[0] = this->mesh;
     ImGui::Render();
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -256,12 +257,15 @@ MeshViewerApp::OnCleanup() {
     return App::OnCleanup();
 }
 
-void MeshViewerApp::CreateObject(const char * path, glm::vec3 location, glm::vec4 color)
+//-----------------------------------------------------------------------------
+void 
+MeshViewerApp::CreateObject(int curMeshIndex, glm::vec3 location, glm::vec4 color)
 {
 	ModelMesh &object = this->models.Add(ModelMesh());
-		object.material.diffuse = color;
-		object.transform = glm::translate(glm::mat4(), location);
-	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this, &object](MeshSetup& setup) 
+	object.curMeshIndex = curMeshIndex;
+	object.material.diffuse = color;
+	object.transform = glm::translate(glm::mat4(), location);
+	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(this->meshPaths[curMeshIndex]), [this, &object](MeshSetup& setup)
 	{
 		auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, this->shaders[object.material.shaderIndex]);
 		ps.DepthStencilState.DepthWriteEnabled = true;
@@ -270,6 +274,30 @@ void MeshViewerApp::CreateObject(const char * path, glm::vec3 location, glm::vec
 		ps.RasterizerState.SampleCount = 4;
 		object.numMaterials = setup.NumPrimitiveGroups();
 		object.drawstate.Pipeline = Gfx::CreateResource(ps);
+	}));
+}
+
+//-----------------------------------------------------------------------------
+void // NOT WORKING, somthing with persistant pipelines..? 
+MeshViewerApp::ChangeObject(int curMeshIndex)
+{
+	ModelMesh &object = this->models.Add(ModelMesh());
+	object.curMeshIndex = curMeshIndex;
+	object.material.diffuse = this->models[this->selectedID].material.diffuse;
+	object.transform = this->models[this->selectedID].transform;
+	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(this->meshPaths[curMeshIndex]), [this, &object](MeshSetup& setup)
+	{
+		auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, this->shaders[object.material.shaderIndex]);
+		ps.DepthStencilState.DepthWriteEnabled = true;
+		ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+		ps.RasterizerState.CullFaceEnabled = true;
+		ps.RasterizerState.SampleCount = 4;
+		object.numMaterials = setup.NumPrimitiveGroups();
+		object.drawstate.Pipeline = Gfx::CreateResource(ps);
+		if (object.drawstate.Pipeline.IsValid())
+		{
+			this->models.EraseSwapBack(this->selectedID);
+		}
 	}));
 }
 
@@ -343,7 +371,8 @@ MeshViewerApp::updateLight() {
 void
 MeshViewerApp::drawUI() {
 	const char* state;
-	switch (Gfx::QueryResourceInfo(this->models[0].drawstate.Mesh[0]).State) {
+	switch (Gfx::QueryResourceInfo(this->models[0].drawstate.Mesh[0]).State) 
+	{
 	case ResourceState::Valid: state = "Loaded"; break;
 	case ResourceState::Failed: state = "Load Failed"; break;
 	case ResourceState::Pending: state = "Loading..."; break;
@@ -352,9 +381,9 @@ MeshViewerApp::drawUI() {
 	IMUI::NewFrame();
 	ImGui::Begin("Mesh Viewer", nullptr, ImVec2(240, 300), 0.25f, 0);
 	ImGui::PushItemWidth(130.0f);
-	if (ImGui::Combo("##mesh", (int*)&this->curMeshIndex, this->meshNames, numMeshes)) {
-		this->camera = this->cameraSettings[this->curMeshIndex];
-		this->loadMesh(this->meshPaths[this->curMeshIndex]);
+	if (ImGui::Combo("##mesh", (int*)&this->models[this->selectedID].curMeshIndex, this->meshNames, numMeshes)) 
+	{
+		this->ChangeObject(this->models[this->selectedID].curMeshIndex);
 	}
 	ImGui::Text("state: %s\n", state);
 	if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
@@ -364,10 +393,11 @@ MeshViewerApp::drawUI() {
 		}
 	}
 
-	if (ImGui::SliderInt("Shapes", this->numOfShape, 0, 10, "%i"))
+	if (ImGui::SliderInt("Shapes", &this->numOfShape, 0, 10, "%i"))
 	{
 
 	}
+		ImGui::SliderInt("id", &selectedID, 0, this->models.Size() - 1);
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::SliderFloat("Dist##cam", &this->camera.dist, minCamDist, maxCamDist);
 		ImGui::SliderFloat("Height##cam", &this->camera.height, minCamHeight, maxCamHeight);
@@ -396,7 +426,6 @@ MeshViewerApp::drawUI() {
 		}
 	}
 	if (ImGui::CollapsingHeader("Material")) {
-		ImGui::SliderInt("id", &selectedID, 0, this->models.Size() - 1);
 		if ((Lambert == this->models[this->selectedID].material.shaderIndex) || (Phong == this->models[this->selectedID].material.shaderIndex)) {
 			this->strBuilder.Format(32, "diffuse##%d", 0);
 			ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->models[this->selectedID].material.diffuse.x);
@@ -410,51 +439,6 @@ MeshViewerApp::drawUI() {
 	}
 	ImGui::PopItemWidth();
 	ImGui::End();
-}
-
-//-----------------------------------------------------------------------------
-void
-MeshViewerApp::createMaterials() {
-    o_assert_dbg(this->mesh.IsValid());
-    if (this->curMaterialLabel.IsValid()) {
-        Gfx::DestroyResources(this->curMaterialLabel);
-    }
-
-    this->curMaterialLabel = Gfx::PushResourceLabel();
-    for (int i = 0; i < this->numMaterials; i++) {
-        auto ps = PipelineSetup::FromLayoutAndShader(this->curMeshSetup.Layout, this->shaders[this->materials[i].shaderIndex]);
-        ps.DepthStencilState.DepthWriteEnabled = true;
-        ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-        ps.RasterizerState.CullFaceEnabled = true;
-        ps.RasterizerState.SampleCount = 4;
-        this->materials[i].pipeline = Gfx::CreateResource(ps);
-    }
-    Gfx::PopResourceLabel();
-}
-
-//-----------------------------------------------------------------------------
-void
-MeshViewerApp::loadMesh(const char* path) 
-{
-
-    // unload current mesh
-    if (this->curMeshLabel.IsValid()) 
-	{
-        Gfx::DestroyResources(this->curMeshLabel);
-        this->curMeshSetup = MeshSetup();
-    }
-
-    // load new mesh, use 'onloaded' callback to capture the mesh setup
-    // object of the loaded mesh
-	this->numMaterials = 0;
-	this->curMeshLabel = Gfx::PushResourceLabel();
-	this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) 
-	{
-		this->curMeshSetup = setup;
-		this->numMaterials = setup.NumPrimitiveGroups();
-		this->createMaterials();
-	}));
-    Gfx::PopResourceLabel();
 }
 
 //-----------------------------------------------------------------------------
