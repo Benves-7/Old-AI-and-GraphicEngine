@@ -12,9 +12,9 @@ class Window:
 		self.MakeWindow(name)
 
 	def MakeWindow(self, name):
-		self.window = GraphWin(name, self.width, self.heigth)
-		self.window.master.geometry("+500-400")
-
+		window = self.window = GraphWin(name, self.width, self.heigth)
+		window.toScreen(0,0)
+	
 	def DrawGrid(self, map):
 		self.map = map
 		indent_X = self.indent_X = self.width/map.width
@@ -28,9 +28,7 @@ class Window:
 				node.center = a.getCenter()
 				a.setFill(color_rgb(node.color[0], node.color[1], node.color[2]))
 				a.draw(self.window)
-				if node.isWalkable:
-					b = Text(node.center, str(node.id))
-					b.draw(self.window)
+			print("row " + str(y + 1) + " is done.")
 		return
 
 	def DrawPath(self, path):
