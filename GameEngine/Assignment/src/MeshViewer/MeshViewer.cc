@@ -16,7 +16,6 @@
 #include "glm/gtx/polar_coordinates.hpp"
 #include "glm/gtx/transform.hpp"
 #include "shaders.h"
-#include "Model.h"
 
 using namespace Oryol;
 
@@ -46,7 +45,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
 	// own funk
-	void CreateObject(int curMeshIndex, glm::vec3 location, glm::vec4 color);
+	void CreateObject(int curMeshIndex, glm::mat4 transform, glm::vec4 color);
 	void ChangeObject(int curMeshIndex);
 
 private:
@@ -200,7 +199,7 @@ MeshViewerApp::OnInit() {
 
 	for (int i = 0; i < this->numOfShape; i++)
 	{
-		this->CreateObject(this->curMeshIndex + i, glm::vec3(0 + 3*i, 0, 0), glm::vec4(0, 255, 0, 0));
+		this->CreateObject(this->curMeshIndex + i, glm::translate(glm::mat4(), glm::vec3(0 + 3*i, 0, 0)), glm::vec4(0, 255, 0, 0));
 	}
 
     // setup projection and view matrices
@@ -230,10 +229,9 @@ MeshViewerApp::OnRunning() {
 	this->drawUI();
 	for (int i = 0; i < size; i++)
 	{
-		if (this->models[i].drawstate.Pipeline.IsValid())
+ 		if (this->models[i].drawstate.Pipeline.IsValid())
 		{
 			Gfx::ApplyDrawState(this->models[i].drawstate);
-			i;
 		}
 		this->applyVariables(i);
 		for (int j = 0; j < this->models[i].numMaterials; j++)
@@ -259,12 +257,12 @@ MeshViewerApp::OnCleanup() {
 
 //-----------------------------------------------------------------------------
 void 
-MeshViewerApp::CreateObject(int curMeshIndex, glm::vec3 location, glm::vec4 color)
+MeshViewerApp::CreateObject(int curMeshIndex, glm::mat4 transform, glm::vec4 color)
 {
 	ModelMesh &object = this->models.Add(ModelMesh());
 	object.curMeshIndex = curMeshIndex;
 	object.material.diffuse = color;
-	object.transform = glm::translate(glm::mat4(), location);
+	object.transform = transform;
 	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(this->meshPaths[curMeshIndex]), [this, &object](MeshSetup& setup)
 	{
 		auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, this->shaders[object.material.shaderIndex]);
@@ -294,10 +292,6 @@ MeshViewerApp::ChangeObject(int curMeshIndex)
 		ps.RasterizerState.SampleCount = 4;
 		object.numMaterials = setup.NumPrimitiveGroups();
 		object.drawstate.Pipeline = Gfx::CreateResource(ps);
-		if (object.drawstate.Pipeline.IsValid())
-		{
-			this->models.EraseSwapBack(this->selectedID);
-		}
 	}));
 }
 
@@ -385,6 +379,7 @@ MeshViewerApp::drawUI() {
 	{
 		this->ChangeObject(this->models[this->selectedID].curMeshIndex);
 	}
+
 	ImGui::Text("state: %s\n", state);
 	if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
 		ImGui::Text("primitive groups:\n");
@@ -393,10 +388,10 @@ MeshViewerApp::drawUI() {
 		}
 	}
 
-	if (ImGui::SliderInt("Shapes", &this->numOfShape, 0, 10, "%i"))
-	{
-
-	}
+	//if (ImGui::SliderInt("Shapes", &this->numOfShape, 0, 10, "%i"))
+	//{
+	//	slider to make more instances.
+	//}
 		ImGui::SliderInt("id", &selectedID, 0, this->models.Size() - 1);
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::SliderFloat("Dist##cam", &this->camera.dist, minCamDist, maxCamDist);
