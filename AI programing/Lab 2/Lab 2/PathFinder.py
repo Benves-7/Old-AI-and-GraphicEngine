@@ -68,7 +68,7 @@ def A_Star(map, window, start_node = None, end_node = None):
 
 		# Generate children
 		children = []
-		neighbours = map.FindNeighboursA_Star(current_node.position)
+		neighbours = map.FindNeighboursAll(current_node.position)
 		for node_position in neighbours:
 
 			# Append
@@ -85,9 +85,15 @@ def A_Star(map, window, start_node = None, end_node = None):
 
 			# Create the f, g and h values
 			if child.position == current_node.position +1 or child.position == current_node.position -1 or child.position == current_node.position + map.width or child.position == current_node.position - map.width:
-				child.g = current_node.g + 10
+				if map.grid[current_node.position].isSwamp:
+				    child.g = current_node.g + 20
+				else:
+					child.g = current_node.g + 10
 			else:
-				child.g = current_node.g + 14
+				if map.grid[current_node.position].isSwamp:
+				    child.g = current_node.g + 28
+				else:
+					child.g = current_node.g + 14
 			
 			child.h = ((abs(map.grid[child.position].x - map.grid[end_node.position].x)*10)) + ((abs(map.grid[child.position].y - map.grid[end_node.position].y) *10))
 			child.f = child.g + child.h

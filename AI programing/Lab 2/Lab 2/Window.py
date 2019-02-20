@@ -1,8 +1,8 @@
 from Graphics import *
 
 class Window:
-	width = 1000
-	heigth = 1000
+	width = 1200
+	heigth = 1250
 	window = None
 	map = None
 	indent_X = None
@@ -13,7 +13,7 @@ class Window:
 
 	def MakeWindow(self, name):
 		window = self.window = GraphWin(name, self.width, self.heigth)
-		window.toScreen(0,0)
+		window.master.geometry("+1910-200")
 	
 	def DrawGrid(self, map):
 		self.map = map
@@ -26,7 +26,7 @@ class Window:
 				node.y = y
 				a = Rectangle(Point(x*indent_X, y*indent_Y), Point(x * indent_X + indent_X, y * indent_Y + indent_Y))
 				node.center = a.getCenter()
-				a.setFill(color_rgb(node.color[0], node.color[1], node.color[2]))
+				a.setFill(color_rgb(node.curColor[0], node.curColor[1], node.curColor[2]))
 				a.draw(self.window)
 			print("row " + str(y + 1) + " is done.")
 		return

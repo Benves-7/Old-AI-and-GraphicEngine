@@ -18,17 +18,24 @@ class Map:
 			self.heigth += 1
 			for character in line:
 				if character == 'M':
-					self.grid.append(Node(True, False, False, (0, 255, 0), self.nextID))
+					self.grid.append(Node(True, False, False, False, (0, 200, 0), self.nextID))
 				elif character == 'X':
-					self.grid.append(Node(False, False, False, (20, 20, 20), self.nextID))
+					self.grid.append(Node(False, False, False, False, (20, 20, 20), self.nextID))
 				elif character == 'S':
-					self.grid.append(Node(True, True, False, (0, 0, 255), self.nextID))
+					self.grid.append(Node(True, False, True, False, (255, 0, 0), self.nextID))
 				elif character == 'G':
-					self.grid.append(Node(True, False, True, (0, 255, 0), self.nextID))
+					self.grid.append(Node(True, True, False, False, (139,69,19), self.nextID))
+				elif character == 'P':
+					self.grid.append(Node(True, False, False, True, (255, 0, 0), self.nextID))
+				elif character == 'B':
+					self.grid.append(Node(False, False, False, False, (220, 220, 220), self.nextID))
+				elif character == 'V':
+					self.grid.append(Node(False, False, False, False, (0, 0, 150), self.nextID))
 				self.nextID += 1
 			print("line " + str(i) + " done.")
 			i+=1
 		print("map complete.")
+
 	def FindNeighbours(self, id):
 		neighbours = []
 		if self.grid[id - 1].isWalkable: #left
@@ -41,7 +48,7 @@ class Map:
 			neighbours.append(id + self.width)
 		return neighbours
 
-	def FindNeighboursA_Star(self, id):
+	def FindNeighboursAll(self, id):
 		
 		left = False
 		right = False
@@ -87,11 +94,13 @@ class Node():
 	isWalkable = False
 	isSpawn = False
 	isGoal = False
-	isKnown = False
+	isKnown = True
+	isSwamp = False
 
 	# Identifer.
 	id = 0
-	color = ()
+	color = None
+	curColor = None
 	x = 0
 	y = 0
 	f = 0
@@ -99,16 +108,27 @@ class Node():
 	# centerpoint.
 	center = None
 
-	def __init__(self, walkable, spawn, goal, color, id = 0):
+	# color.
+
+	def __init__(self, walkable, swamp, spawn, goal, color, id = 0):
 		self.isWalkable = walkable
+		self.isSwamp = swamp
 		self.isSpawn = spawn
 		self.isGoal = goal
-		self.color = color
 		self.id = id
+
+		if self.isKnown:
+			self.curColor = color
+		elif not self.isKnown:
+			self.curColor = (211,211,211)
+
 		i = 0
 		while i < 100:
 			if self.isWalkable:
 				self.grid.append(SmallNode(True, False, False))
+				i+=1
+			else:
+				break
 
 class SmallNode():
 
