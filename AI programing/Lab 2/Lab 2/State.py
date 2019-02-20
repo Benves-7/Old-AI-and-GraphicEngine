@@ -21,3 +21,11 @@ class WorkerGlobalState(State):
 		return 1
 	def Exit(self, worker):
 		return 1
+
+class ExplorerGlobalState(State):
+	def Enter(self, worker):
+		return 1
+	def Execute(self, worker):
+		return 1
+	def Exit(self, worker):
+		return 1

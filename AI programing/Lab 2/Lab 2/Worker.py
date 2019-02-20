@@ -23,5 +23,13 @@ class Worker(BaseGameEntityClass):
 	def GetFSM(self):
 		return self.FSM
 
+class Explorer(BaseGameEntityClass):
+    
+	id = None
+	FSM = None
 
-
+	def __init__(worker):
+		self.id = worker.id
+		self.FSM = StateMachine(self)
+		self.FSM.SetCurrentState(Begin_Life())
+		self.FSM.SetGlobalState(ExplorerGlobalState())
