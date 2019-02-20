@@ -21,11 +21,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BaseGameEntity.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FileLoader.py" />
     <Compile Include="Graphics.py" />
     <Compile Include="Lab_2.py" />
     <Compile Include="MapLoader.py" />
-    <Compile Include="State-Machine.py">
+    <Compile Include="StateMachine.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="State.py">
@@ -33,6 +36,9 @@
     </Compile>
     <Compile Include="PathFinder.py" />
     <Compile Include="Window.py" />
+    <Compile Include="Worker.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

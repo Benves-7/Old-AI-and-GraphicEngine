@@ -17,6 +17,7 @@ class Map:
 		for line in list:
 			self.heigth += 1
 			for character in line:
+				#print(character)
 				if character == 'M':
 					self.grid.append(Node(True, False, False, False, (0, 200, 0), self.nextID))
 				elif character == 'X':
@@ -31,10 +32,10 @@ class Map:
 					self.grid.append(Node(False, False, False, False, (220, 220, 220), self.nextID))
 				elif character == 'V':
 					self.grid.append(Node(False, False, False, False, (0, 0, 150), self.nextID))
+				elif character == 'T':
+					self.grid.append(Node(True, False, False, False, (0,0,0), self.nextID))
 				self.nextID += 1
-			print("line " + str(i) + " done.")
-			i+=1
-		print("map complete.")
+		print("Map done.")
 
 	def FindNeighbours(self, id):
 		neighbours = []

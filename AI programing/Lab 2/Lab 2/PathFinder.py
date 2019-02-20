@@ -17,6 +17,9 @@ class Node():
 	def __eq__(self, other):
 		return self.position == other.position 
 
+def Explore(map,window, start_node):
+
+
 def A_Star(map, window, start_node = None, end_node = None):
 	# Returns a list of tuples as a path from given start to given end in the given maze.
 
@@ -47,6 +50,8 @@ def A_Star(map, window, start_node = None, end_node = None):
 
 		current_node = open_list[0]
 		current_index = 0
+		#if(len(open_list)>100):
+		#	open_list = Sort_F_Cost(open_list)
 		for index, item in enumerate(open_list):
 			if item.f < current_node.f:
 				current_node = item
@@ -75,7 +80,7 @@ def A_Star(map, window, start_node = None, end_node = None):
 			children.append(Node(current_node, node_position))
 
 		# Loop through children
-		#window.drawnode(current_node.position, "red", int(current_node.f))
+		#window.DrawNode(current_node.position, "red", int(current_node.f))
 		neighbours = []
 		for child in children:
 
@@ -104,7 +109,7 @@ def A_Star(map, window, start_node = None, end_node = None):
 			# Add the cild to the open list
 			open_list.append(child)
 			
-			#window.drawnode(child.position, "green", int(child.f))
+			#window.DrawNode(child.position, "green", int(child.f))
 			map.grid[child.position].f = child.f
 
 def BreadthFirst(map, window):

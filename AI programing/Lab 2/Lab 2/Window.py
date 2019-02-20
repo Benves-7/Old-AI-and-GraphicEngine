@@ -1,8 +1,8 @@
 from Graphics import *
 
 class Window:
-	width = 1200
-	heigth = 1250
+	width = 1000
+	heigth = 1000
 	window = None
 	map = None
 	indent_X = None
@@ -12,7 +12,7 @@ class Window:
 		self.MakeWindow(name)
 
 	def MakeWindow(self, name):
-		window = self.window = GraphWin(name, self.width, self.heigth)
+		window = self.window = GraphWin(name, self.width, self.heigth, autoflush=False)
 		window.master.geometry("+1910-200")
 	
 	def DrawGrid(self, map):
@@ -28,7 +28,8 @@ class Window:
 				node.center = a.getCenter()
 				a.setFill(color_rgb(node.curColor[0], node.curColor[1], node.curColor[2]))
 				a.draw(self.window)
-			print("row " + str(y + 1) + " is done.")
+			#print("row " + str(y + 1) + " is done.")
+		self.window.redraw()
 		return
 
 	def DrawPath(self, path):
@@ -38,8 +39,9 @@ class Window:
 					a = Circle(node.center, self.indent_X / 2)
 					a.setFill("yellow")
 					a.draw(self.window)
-					b = Text(node.center, str(node.id))
-					b.draw(self.window)
+					#b = Text(node.center, str(node.id))
+					#b.draw(self.window)
+		self.window.redraw()
 		return
 
 	def DrawPathFCost(self, path):
@@ -57,8 +59,8 @@ class Window:
 		a = Circle(self.map.grid[currentNode].center, self.indent_X/2)
 		a.setFill(color)
 		a.draw(self.window)
-		b = Text(self.map.grid[currentNode].center, str(self.map.grid[currentNode].id))
-		b.draw(self.window)
+		#b = Text(self.map.grid[currentNode].center, str(self.map.grid[currentNode].id))
+		#b.draw(self.window)
 		
 	def DrawNodeFCost(self, currentNode, color, text):
 		a = Circle(self.map.grid[currentNode].center, self.indent_X/2)
