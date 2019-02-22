@@ -11,14 +11,17 @@ class StateMachine():
 
 	def SetCurrentState(self, state):
 		self.ownerCurrentState = state
+
 	def SetGlobalState(self, state):
 		self.globalState = state
+
 	def SetPreviousState(self, state):
 		self.ownerPreviousState = state
 
 	def Update(self):
 		if self.globalState:
 			self.globalState.Execute(owner)
+
 		if self.ownerCurrentState:
 			self.ownerCurrentState.Execute(owner)
 
@@ -34,8 +37,10 @@ class StateMachine():
 
 	def CurrentState(self):
 		return self.ownerCurrentState
+
 	def GlobalState(self):
 		return self.globalState
+
 	def PreviusState(self):
 		return self.ownerPreviousState
 
@@ -44,3 +49,10 @@ class StateMachine():
 		    return True
 		else:
 			return False
+
+	def HandelMessage(self, telegram):
+		if self.ownerCurrentState and self.ownerCurrentState.OnMessage(self.owner, telegram):
+			return True
+		elif(self.globalState and self.globalState.OnMessage(self.owner,telegram)):
+			return True
+		return False

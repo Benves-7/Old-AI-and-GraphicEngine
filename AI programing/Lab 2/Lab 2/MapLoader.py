@@ -1,40 +1,44 @@
 from FileLoader import *
-class Map:
+from JsonLoader import *
 
+class Map:
+	Data = None
 	width = 0
 	heigth = 0
 	nextID = 0
 	grid = []
 
 	def __init__(self, fileName):
+		self.Data = JsonLoader.Data["mapLoader"]
 		self.grid = []
 		self.MakeMap(fileName)
 
 	def MakeMap(self, fileName):
+		fogofwar = not bool(self.Data["fogofwar"])
 		list = LoadFiletoList(fileName)
 		self.width = len(list[0])
 		i = 1
 		for line in list:
 			self.heigth += 1
 			for character in line:
-				#print(character)
-				if character == 'M':
-					self.grid.append(Node(True, False, False, False, (0, 200, 0), self.nextID))
-				elif character == 'X':
-					self.grid.append(Node(False, False, False, False, (20, 20, 20), self.nextID))
-				elif character == 'S':
-					self.grid.append(Node(True, False, True, False, (255, 0, 0), self.nextID))
-				elif character == 'G':
-					self.grid.append(Node(True, True, False, False, (139,69,19), self.nextID))
-				elif character == 'P':
-					self.grid.append(Node(True, False, False, True, (255, 0, 0), self.nextID))
-				elif character == 'B':
-					self.grid.append(Node(False, False, False, False, (220, 220, 220), self.nextID))
-				elif character == 'V':
-					self.grid.append(Node(False, False, False, False, (0, 0, 150), self.nextID))
-				elif character == 'T':
-					self.grid.append(Node(True, False, False, False, (0,0,0), self.nextID))
+				if character	== 'X':
+					self.grid.append(Node(self.Data["nodeTypes"]["unpassableNode"], fogofwar, self.nextID)) #unpassable
+				elif character	== 'S':
+					self.grid.append(Node(self.Data["nodeTypes"]["spawnNode"], fogofwar, self.nextID)) #spawn
+				elif character	== 'P':
+					self.grid.append(Node(self.Data["nodeTypes"]["goalNode"], fogofwar, self.nextID)) #goal
+				elif character	== 'M':
+					self.grid.append(Node(self.Data["nodeTypes"]["groundNode"], fogofwar, self.nextID)) #ground
+				elif character	== 'G':
+					self.grid.append(Node(self.Data["nodeTypes"]["swampNode"], fogofwar, self.nextID)) #swamp
+				elif character	== 'B':
+					self.grid.append(Node(self.Data["nodeTypes"]["mountainNode"], fogofwar, self.nextID)) #mountain
+				elif character	== 'V':
+					self.grid.append(Node(self.Data["nodeTypes"]["waterNode"], fogofwar, self.nextID)) #water
+				elif character	== 'T':
+					self.grid.append(Node(self.Data["nodeTypes"]["treeNode"], fogofwar, self.nextID)) #trees
 				self.nextID += 1
+
 		print("Map done.")
 
 	def FindNeighbours(self, id):
@@ -81,10 +85,6 @@ class Map:
 		return neighbours
 
 class Node():
-
-	# internal grid 10x10m  
-	grid = []
-
 	# Nodes checked.
 	up = False
 	down = False
@@ -93,10 +93,12 @@ class Node():
 
 	# Type of node.
 	isWalkable = False
-	isSpawn = False
-	isGoal = False
-	isKnown = True
-	isSwamp = False
+	isbuildable = False
+	isKnown = False
+
+	#stats
+	speed = 0
+	numTrees = 0
 
 	# Identifer.
 	id = 0
@@ -109,36 +111,19 @@ class Node():
 	# centerpoint.
 	center = None
 
-	# color.
+	def __init__(self, Data, fog, id = 0):
+		self.isWalkable = bool(Data["isWalkable"])
+		if self.isWalkable:
+		    self.speed = Data["speed"]
+		self.isbuildable = bool(Data["isBuildable"])
+		if "numTrees" in Data:
+			numTrees = Data["numTrees"]
 
-	def __init__(self, walkable, swamp, spawn, goal, color, id = 0):
-		self.isWalkable = walkable
-		self.isSwamp = swamp
-		self.isSpawn = spawn
-		self.isGoal = goal
+		self.isKnown = fog
 		self.id = id
 
 		if self.isKnown:
-			self.curColor = color
+			self.curColor = Data["color"]
 		elif not self.isKnown:
+			self.color = tuple(Data["color"])
 			self.curColor = (211,211,211)
-
-		i = 0
-		while i < 100:
-			if self.isWalkable:
-				self.grid.append(SmallNode(True, False, False))
-				i+=1
-			else:
-				break
-
-class SmallNode():
-
-	# Type of node.
-	isWalkable = False
-	isTree = False
-	isWater = False
-
-	def __init__(self, walkable, tree, water):
-		self.isWalkable = walkable
-		self.isTree = tree
-		self.isWater = water

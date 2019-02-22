@@ -24,8 +24,14 @@
     <Compile Include="BaseGameEntity.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="EntityManager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FileLoader.py" />
     <Compile Include="Graphics.py" />
+    <Compile Include="JsonLoader.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Lab_2.py" />
     <Compile Include="MapLoader.py" />
     <Compile Include="StateMachine.py">

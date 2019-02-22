@@ -18,7 +18,7 @@ class Node():
 		return self.position == other.position 
 
 def Explore(map,window, start_node):
-
+	return 0
 
 def A_Star(map, window, start_node = None, end_node = None):
 	# Returns a list of tuples as a path from given start to given end in the given maze.

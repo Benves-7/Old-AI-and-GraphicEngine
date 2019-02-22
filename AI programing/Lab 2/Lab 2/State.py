@@ -5,6 +5,8 @@ class State():
 		return -1
 	def Exit():
 		return -1
+	def OnMessage(entity, telegram):
+		pass
 
 class Begin_Life(State):
 	def Enter(self, worker):
