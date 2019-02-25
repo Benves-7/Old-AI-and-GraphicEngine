@@ -31,13 +31,19 @@ class Window:
 				node.y = y
 				a = Rectangle(Point(x*indent_X, y*indent_Y), Point(x * indent_X + indent_X, y * indent_Y + indent_Y))
 				node.center = a.getCenter()
-				a.setFill(color_rgb(node.curColor[0], node.curColor[1], node.curColor[2]))
+				if (node.isKnown or not bool(self.Data["fogofwar"]) or node.isBorder):
+					a.setFill(node.color)
+				else:
+					a.setFill("gray")
 				a.draw(self.window)
 				if bool(self.Data["gridnumbering"]):
 					b = Text(node.center, str(node.id))
 					b.draw(self.window)
 		self.window.redraw()
 		return
+
+	def Draw(self, point):
+		self.window.addItem(point)
 
 	def DrawPath(self, path):
 		for step in path:

@@ -2,6 +2,7 @@ from Window import *
 from queue import *
 from math import *
 from time import *
+from random import *
 
 class Node():
     # Node for a* pathfinding
@@ -20,22 +21,27 @@ class Node():
 def Explore(map,window, start_node):
 	return 0
 
-def A_Star(map, window, start_node = None, end_node = None):
+def A_Star(map, window, currposCircle = None, end_node = None):
 	# Returns a list of tuples as a path from given start to given end in the given maze.
-
 	# Create start and end node.
-	if start_node == None:
+	if not end_node == None:
 		for node in map.grid:
-			if node.isSpawn:
+			if node.center.getX() == currposCircle.getCenter().getX() and node.center.getY() == currposCircle.getCenter().getY():
 				start_node = Node(None, node.id)
-			elif node.isGoal:
-				end_node = Node(None, node.id)
+				end_node = Node(None, end_node)
 	else:
-		start_node = Node(None, start_node)
-		end_node = Node(None, end_node)
+		for node in map.grid:
+			if node.center.getX() == currposCircle.getCenter().getX() and node.center.getY() == currposCircle.getCenter().getY():
+				start_node = Node(None, node.id)
+				while True:
+					i = randint(0,len(map.grid)-1)
+					if map.grid[i].isWalkable:
+						end_node = Node(None, map.grid[i].id)
+						break
 
 	start_node.g = start_node.h = start_node.f = 0
 	end_node.g = end_node.h = end_node.f = 0
+	window.DrawNode(end_node.position, "yellow")
 
 	# Make open and closed list.
 	open_list = []

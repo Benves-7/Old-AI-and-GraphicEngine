@@ -1,12 +1,12 @@
 {
 	"mapLoader": 
 		{
-		"fogofwar": 0,
 		"nodeTypes":
 			{
 			"treeNode":
 				{
-				"color": [0,50,0],
+				"type": "tree",
+				"color": "dark green",
 				"isWalkable": 1,
 				"speed": 1,
 				"isBuildable": 0,
@@ -14,35 +14,41 @@
 				},
 			"groundNode":
 				{
-				"color": [0,200,0],
+				"type": "ground",
+				"color": "green",
 				"isWalkable": 1,
 				"speed": 1,
 				"isBuildable": 1
 				},
 			"swampNode":
 				{
-				"color": [139, 69, 19],
+				"type": "swamp",
+				"color": "brown",
 				"isWalkable": 1,
 				"speed": 0.5,
 				"isBuildable": 0
 				},
 			"waterNode":
 				{
-				"color": [0, 0, 200],
+				"type": "water",
+				"color": "blue",
 				"isWalkable": 0,
 				"isBuildable": 0
 				},
 			"mountainNode":
 				{
-				"color": [220, 220, 220],
+				"type": "mountain",
+				"color": "gray",
 				"isWalkable": 0,
 				"isBuildable": 0
 				},
 			"unpassableNode":
 				{
-				"color": [0, 0, 0],
+				"type": "unpassable",
+				"color": "black",
 				"isWalkable": 0,
-				"isBuildable": 0
+				"isBuildable": 0,
+				"isBorder": 1
 				}
 			}
 		},
@@ -52,6 +58,15 @@
 		"height": 1200,
 		"offset": "+1910-100",
 		"pathcolor": "yellow",
-		"gridnumbering": 0
+		"gridnumbering": 0,
+		"fogofwar": 1
+		},
+	"explorer":
+		{
+		"speed": 2.0
+		},
+	"worker":
+		{
+		"speed": 2.0
 		}
 }

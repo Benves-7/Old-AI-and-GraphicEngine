@@ -1,10 +1,16 @@
+from time import *
+from Vector import *
+from math import *
+
 class BaseGameEntityClass():
 	m_ID = None
 	iNextValidID = 0
+	map = None
+	window = None
 
 	def SetID(self):
 		self.m_ID = BaseGameEntityClass.iNextValidID
-		BGE.iNextValidID += 1
+		BaseGameEntityClass.iNextValidID += 1
 
 	def Update(self):
 		return 0 # FILLER, does nothing so far.
@@ -14,6 +20,10 @@ class BaseGameEntityClass():
 
 	def HandelMessage(self, telegram):
 	    return self.FSM.HandelMessage(telegram)
+
+	def BindWindow(map, window):
+		BaseGameEntityClass.map = map
+		BaseGameEntityClass.window = window
 
 class EntityManager():
 	
@@ -27,8 +37,6 @@ class EntityManager():
 
 	def RemoveEntity(entityToDel):
 		EntityManager.entitys.pop[entityToDel.id]
-
-from time import *
 
 class MessageDispatcher():
     
@@ -57,3 +65,28 @@ class MessageDispatcher():
 
 	def Send(telegram):
 		telegram["header"]["reciever"].HandelMessage(telegram)
+
+class MovingEntity(BaseGameEntityClass):
+
+	def GoTowards(self):
+		
+		# walks toward pos, returns whether person is at pos.
+		try:
+			distX = (self.pos.getCenter().getX() - self.map.grid[self.path[1]].center.getX())
+			distY = (self.pos.getCenter().getY() - self.map.grid[self.path[1]].center.getY())
+		except :
+		    return True
+
+
+		v = atan2(distY, distX)
+		
+		dx = -cos(v)*self.speed*self.map.grid[self.path[0]].speed
+		dy = -sin(v)*self.speed*self.map.grid[self.path[0]].speed
+		
+		if abs(dx) > abs(distX):
+			dx = -distX
+		if abs(dy) > abs(distY):
+			dy = -distY
+
+		self.pos.move(dx, dy)
+		return self.pos.getCenter().getX() ==  self.map.grid[self.path[1]].center.getX() and self.pos.getCenter().getY() == self.map.grid[self.path[1]].center.getY()

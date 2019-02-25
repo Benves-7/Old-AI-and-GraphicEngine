@@ -41,6 +41,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PathFinder.py" />
+    <Compile Include="Vector.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Window.py" />
     <Compile Include="Worker.py">
       <SubType>Code</SubType>

@@ -1,4 +1,5 @@
 from Worker import *
+
 class StateMachine():
     
 	owner = None
@@ -20,17 +21,17 @@ class StateMachine():
 
 	def Update(self):
 		if self.globalState:
-			self.globalState.Execute(owner)
+			self.globalState.Execute(self.owner)
 
 		if self.ownerCurrentState:
-			self.ownerCurrentState.Execute(owner)
+			self.ownerCurrentState.Execute(self.owner)
 
 	def ChangeState(self, newState):
 		assert(newState and "<StateMachine::ChangeState>: trying to change to a null state")
 		self.ownerPreviousState = self.ownerCurrentState
-		self.ownerCurrentState.Exit(owner)
+		self.ownerCurrentState.Exit(self.owner)
 		self.ownerCurrentState = newState
-		self.ownerCurrentState.Enter(owner)
+		self.ownerCurrentState.Enter(self.owner)
 
 	def RevertToPreviousState(self):
 		self.ChangeState(self.ownerPreviousState)
