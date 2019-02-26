@@ -64,6 +64,7 @@ class Map:
 		if self.grid[id - 1].isWalkable: #left
 			neighbours.append(id-1)
 			left = True
+
 		if self.grid[id + 1].isWalkable: #right
 			neighbours.append(id+1)
 			right = True
@@ -82,6 +83,27 @@ class Map:
 		if self.grid[id + width - 1].isWalkable and down and left:
 			neighbours.append(id+width-1)
 		return neighbours
+
+	def ExploreNeighbours(self, id):
+		
+		width = self.width
+		neighbours = []
+
+		neighbours.append(id-1) #left
+		neighbours.append(id+1) #right
+		neighbours.append(id-width) #up
+		neighbours.append(id+width) #down
+		neighbours.append(id-1-width) #left and up
+		neighbours.append(id-1+width) #left and down
+		neighbours.append(id+1-width) #right and up
+		neighbours.append(id+1+width) #right and down
+		for node in neighbours:
+			self.grid[node].isKnown = True
+		return neighbours
+
+	def FindNodes(self, nodeindex):
+		pos = self.grid[nodeindex].center
+
 
 class Node():
 	# Nodes checked.

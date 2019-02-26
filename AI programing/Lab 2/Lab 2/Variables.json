@@ -56,17 +56,20 @@
 		{
 		"width": 1200,
 		"height": 1200,
-		"offset": "+1910-100",
+		"offset": "+1911-680",
 		"pathcolor": "yellow",
 		"gridnumbering": 0,
-		"fogofwar": 1
+		"fogofwar": 1,
+		"fogofwarcolor": "dark gray"
 		},
 	"explorer":
 		{
-		"speed": 2.0
+		"speed": 1.0,
+		"color": "red"
 		},
 	"worker":
 		{
-		"speed": 2.0
+		"speed": 1.0,
+		"color": "yellow"
 		}
 }

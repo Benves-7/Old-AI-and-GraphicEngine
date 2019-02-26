@@ -72,8 +72,8 @@ class MovingEntity(BaseGameEntityClass):
 		
 		# walks toward pos, returns whether person is at pos.
 		try:
-			distX = (self.pos.getCenter().getX() - self.map.grid[self.path[1]].center.getX())
-			distY = (self.pos.getCenter().getY() - self.map.grid[self.path[1]].center.getY())
+			distX = (self.circle.getCenter().getX() - self.map.grid[self.path[0]].center.getX())
+			distY = (self.circle.getCenter().getY() - self.map.grid[self.path[0]].center.getY())
 		except :
 		    return True
 
@@ -88,5 +88,6 @@ class MovingEntity(BaseGameEntityClass):
 		if abs(dy) > abs(distY):
 			dy = -distY
 
-		self.pos.move(dx, dy)
-		return self.pos.getCenter().getX() ==  self.map.grid[self.path[1]].center.getX() and self.pos.getCenter().getY() == self.map.grid[self.path[1]].center.getY()
+		self.circle.move(dx, dy)
+		self.searchRectangel.move(dx, dy)
+		return self.circle.getCenter().getX() ==  self.map.grid[self.path[0]].center.getX() and self.circle.getCenter().getY() == self.map.grid[self.path[0]].center.getY()

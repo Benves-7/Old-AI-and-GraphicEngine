@@ -34,16 +34,13 @@ class Window:
 				if (node.isKnown or not bool(self.Data["fogofwar"]) or node.isBorder):
 					a.setFill(node.color)
 				else:
-					a.setFill("gray")
-				a.draw(self.window)
+					a.setFill(self.Data["fogofwarcolor"])
+				self.window.addItem(a)
 				if bool(self.Data["gridnumbering"]):
 					b = Text(node.center, str(node.id))
 					b.draw(self.window)
 		self.window.redraw()
 		return
-
-	def Draw(self, point):
-		self.window.addItem(point)
 
 	def DrawPath(self, path):
 		for step in path:
@@ -55,7 +52,6 @@ class Window:
 					if bool(self.Data["gridnumbering"]):
 						b = Text(node.center, str(node.id))
 						b.draw(self.window)
-		self.window.redraw()
 		return
 
 	def DrawPathFCost(self, path):

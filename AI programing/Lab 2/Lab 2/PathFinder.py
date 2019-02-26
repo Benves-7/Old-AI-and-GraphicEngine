@@ -18,26 +18,21 @@ class Node():
 	def __eq__(self, other):
 		return self.position == other.position 
 
-def Explore(map,window, start_node):
-	return 0
-
-def A_Star(map, window, currposCircle = None, end_node = None):
+def A_Star(map, window, currpos = None, end_node = None):
 	# Returns a list of tuples as a path from given start to given end in the given maze.
 	# Create start and end node.
+	start_node = Node(None, currpos)
 	if not end_node == None:
 		for node in map.grid:
-			if node.center.getX() == currposCircle.getCenter().getX() and node.center.getY() == currposCircle.getCenter().getY():
-				start_node = Node(None, node.id)
+			if node.id == currpos:
 				end_node = Node(None, end_node)
 	else:
-		for node in map.grid:
-			if node.center.getX() == currposCircle.getCenter().getX() and node.center.getY() == currposCircle.getCenter().getY():
-				start_node = Node(None, node.id)
-				while True:
-					i = randint(0,len(map.grid)-1)
-					if map.grid[i].isWalkable:
-						end_node = Node(None, map.grid[i].id)
-						break
+		#list = map.findNodes(currpos)
+		while True:
+			i = randint(start_node.position-map.width*6,start_node.position+map.width*6)
+			if map.grid[i].isWalkable and i > 0 and i < len(map.grid)-1 and not map.grid[i].isKnown:
+				end_node = Node(None, map.grid[i].id)
+				break
 
 	start_node.g = start_node.h = start_node.f = 0
 	end_node.g = end_node.h = end_node.f = 0
@@ -56,8 +51,6 @@ def A_Star(map, window, currposCircle = None, end_node = None):
 
 		current_node = open_list[0]
 		current_index = 0
-		#if(len(open_list)>100):
-		#	open_list = Sort_F_Cost(open_list)
 		for index, item in enumerate(open_list):
 			if item.f < current_node.f:
 				current_node = item
@@ -75,6 +68,7 @@ def A_Star(map, window, currposCircle = None, end_node = None):
 			while current is not None:
 				path.append(current.position)
 				current = current.parent
+			path.pop()
 			return path[::-1] # return reversed path
 
 		# Generate children
@@ -110,8 +104,10 @@ def A_Star(map, window, currposCircle = None, end_node = None):
 			child.f = child.g + child.h
 
 			# Child is already in the open list
-			if child in open_list and child.g > open_list[open_list.index(child)].g:
+			if child in open_list:
+				if child.g > open_list[open_list.index(child)].g:
 					continue
+				continue
 			# Add the cild to the open list
 			open_list.append(child)
 			

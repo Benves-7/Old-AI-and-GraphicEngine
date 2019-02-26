@@ -11,10 +11,16 @@ window = Window("map")
 BaseGameEntityClass.BindWindow(map, window)
 window.DrawGrid(map)
 window.window.autoflush = True
-Bob = Worker(map)
-Bob = Explorer(Bob)
+workers = []
+explorers = []
+i = 0
+while i < 50:
+	workers.append(Worker())
+	i+=1
+for x in workers:
+    explorers.append(Explorer(x))
 
-
+i = 0
 while True:
-    Bob.Update()
-
+	for x in explorers:
+	    x.Update()
