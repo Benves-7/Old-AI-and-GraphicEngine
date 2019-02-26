@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "test2 - pyglet", "test2 - pyglet\test2 - pyglet.pyproj", "{57DB9FB1-3DFB-43AE-89B3-8355E2378D8D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57DB9FB1-3DFB-43AE-89B3-8355E2378D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57DB9FB1-3DFB-43AE-89B3-8355E2378D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5CDEB632-1B6A-4B1A-9F36-67EC543B107D}
+	EndGlobalSection
+EndGlobal
