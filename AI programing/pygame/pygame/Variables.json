@@ -23,7 +23,7 @@
 			"swampNode":
 				{
 				"type": "swamp",
-				"color": "brown",
+				"color": "brown3",
 				"isWalkable": 1,
 				"speed": 0.5,
 				"isBuildable": 0

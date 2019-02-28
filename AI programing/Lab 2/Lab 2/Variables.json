@@ -6,7 +6,7 @@
 			"treeNode":
 				{
 				"type": "tree",
-				"color": "dark green",
+				"color": "Dark Green",
 				"isWalkable": 1,
 				"speed": 1,
 				"isBuildable": 0,
@@ -15,7 +15,7 @@
 			"groundNode":
 				{
 				"type": "ground",
-				"color": "green",
+				"color": "Green",
 				"isWalkable": 1,
 				"speed": 1,
 				"isBuildable": 1
@@ -23,7 +23,7 @@
 			"swampNode":
 				{
 				"type": "swamp",
-				"color": "brown",
+				"color": "Firebrick",
 				"isWalkable": 1,
 				"speed": 0.5,
 				"isBuildable": 0
@@ -31,7 +31,7 @@
 			"waterNode":
 				{
 				"type": "water",
-				"color": "blue",
+				"color": "Aqua",
 				"isWalkable": 0,
 				"isBuildable": 0
 				},

@@ -1,5 +1,6 @@
 from FileLoader import *
 from JsonLoader import *
+from Entitys import *
 
 class Map:
 	Data = None
@@ -42,13 +43,13 @@ class Map:
 
 	def FindNeighbours(self, id):
 		neighbours = []
-		if self.grid[id - 1].isWalkable: #left
+		if self.grid[id - 1].isWalkable and self.grid[id - 1].isKnown: #left
 			neighbours.append(id - 1)
-		if self.grid[id - self.width].isWalkable: #up
+		if self.grid[id - self.width].isWalkable and self.grid[id - self.width].isKnown: #up
 			neighbours.append(id - self.width)
-		if self.grid[id + 1].isWalkable: #right
+		if self.grid[id + 1].isWalkable and self.grid[id + 1].isKnown: #right
 			neighbours.append(id + 1)
-		if self.grid[id + self.width].isWalkable: #down
+		if self.grid[id + self.width].isWalkable and self.grid[id + self.width].isKnown: #down
 			neighbours.append(id + self.width)
 		return neighbours
 
@@ -88,21 +89,32 @@ class Map:
 		
 		width = self.width
 		neighbours = []
-
-		neighbours.append(id-1) #left
-		neighbours.append(id+1) #right
-		neighbours.append(id-width) #up
-		neighbours.append(id+width) #down
-		neighbours.append(id-1-width) #left and up
-		neighbours.append(id-1+width) #left and down
-		neighbours.append(id+1-width) #right and up
-		neighbours.append(id+1+width) #right and down
+		if not self.grid[id-1].isKnown:
+			neighbours.append(id-1) #left
+		if not self.grid[id+1].isKnown:
+			neighbours.append(id+1) #right
+		if not self.grid[id-width].isKnown:
+			neighbours.append(id-width) #up
+		if not self.grid[id+width].isKnown:
+			neighbours.append(id+width) #down
+		if not self.grid[id-1-width].isKnown:
+			neighbours.append(id-1-width) #left and up
+		if not self.grid[id-1+width].isKnown:
+			neighbours.append(id-1+width) #left and down
+		if not self.grid[id+1-width].isKnown:
+			neighbours.append(id+1-width) #right and up
+		if not self.grid[id+1+width].isKnown:
+			neighbours.append(id+1+width) #right and down
 		for node in neighbours:
 			self.grid[node].isKnown = True
 		return neighbours
 
 	def FindNodes(self, nodeindex):
 		pos = self.grid[nodeindex].center
+
+	def find_error_node(self, window, nodeindex):
+		window.window.items[nodeindex].setFill(self.grid[nodeindex].color)
+		window.DrawNode(nodeindex, "red")
 
 
 class Node():
@@ -123,6 +135,8 @@ class Node():
 	#stats
 	speed = 0
 	numTrees = 0
+	treesLeft = 0
+	trees = []
 
 	# Identifer.
 	id = 0
@@ -146,7 +160,7 @@ class Node():
 		self.isbuildable = bool(Data["isBuildable"])
 
 		if "numTrees" in Data:
-			numTrees = Data["numTrees"]
+			self.numTrees = self.treesLeft = Data["numTrees"]
 		if "isBorder" in Data:
 			self.isBorder = bool(Data["isBorder"])
 

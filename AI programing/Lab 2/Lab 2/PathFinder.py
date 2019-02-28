@@ -18,25 +18,37 @@ class Node():
 	def __eq__(self, other):
 		return self.position == other.position 
 
+def NotToFar(map, start_node, end_node):
+	h = ((abs(map.grid[start_node].x - map.grid[end_node].x)*10)) + ((abs(map.grid[start_node].y - map.grid[end_node].y) *10))
+	if h > 50:
+		return False
+	else:
+		return True
+
+
 def A_Star(map, window, currpos = None, end_node = None):
+	starttime = time()
 	# Returns a list of tuples as a path from given start to given end in the given maze.
 	# Create start and end node.
 	start_node = Node(None, currpos)
 	if not end_node == None:
-		for node in map.grid:
-			if node.id == currpos:
-				end_node = Node(None, end_node)
+		end_node = Node(None, end_node)
 	else:
 		#list = map.findNodes(currpos)
 		while True:
-			i = randint(start_node.position-map.width*6,start_node.position+map.width*6)
-			if map.grid[i].isWalkable and i > 0 and i < len(map.grid)-1 and not map.grid[i].isKnown:
+			xRand = randint(-10,10)
+			yRand = randint(-10,10)
+			i = currpos + (xRand + yRand * map.width)
+			if i > 0 and i < len(map.grid)-1 and map.grid[i].isWalkable and NotToFar(map, currpos, i) and not currpos == i:
 				end_node = Node(None, map.grid[i].id)
 				break
+			t = time() - starttime
+			if t > 0.001:
+				return [currpos]
 
 	start_node.g = start_node.h = start_node.f = 0
 	end_node.g = end_node.h = end_node.f = 0
-	window.DrawNode(end_node.position, "yellow")
+	#window.DrawNode(end_node.position, "yellow")
 
 	# Make open and closed list.
 	open_list = []
@@ -63,13 +75,13 @@ def A_Star(map, window, currpos = None, end_node = None):
 
 		# Found Goal
 		if current_node == end_node:
-			path = []
 			current = current_node
+			path = []
 			while current is not None:
 				path.append(current.position)
 				current = current.parent
-			path.pop()
-			return path[::-1] # return reversed path
+			path.reverse()
+			return path # return reversed path
 
 		# Generate children
 		children = []
@@ -81,7 +93,6 @@ def A_Star(map, window, currpos = None, end_node = None):
 
 		# Loop through children
 		#window.DrawNode(current_node.position, "red", int(current_node.f))
-		neighbours = []
 		for child in children:
 
 			# Child is on the closed list.
@@ -108,19 +119,20 @@ def A_Star(map, window, currpos = None, end_node = None):
 				if child.g > open_list[open_list.index(child)].g:
 					continue
 				continue
+
 			# Add the cild to the open list
 			open_list.append(child)
 			
 			#window.DrawNode(child.position, "green", int(child.f))
 			map.grid[child.position].f = child.f
 
-def BreadthFirst(map, window):
+			t = time() - starttime
+			if t > 0.01:
+				return [currpos]
 
-	for node in map.grid:
-		if node.isSpawn:
-			start_node = node.id
-		elif node.isGoal:
-			end_node = node.id
+def BreadthFirst(map, window, start_node, end_node):
+
+
 	frontier = Queue()
 	frontier.put(start_node)
 	came_from = {}
@@ -170,7 +182,6 @@ def DepthFirst(map, window):
 			while current != start_node:
 				path.append(current)
 				current = came_from[current]
-			path.append(start_node)
 			path.reverse()
 			return path
 	return

@@ -1,15 +1,16 @@
 from time import *
 from Vector import *
 from math import *
+import Entitys
 
 class BaseGameEntityClass():
-	m_ID = None
 	iNextValidID = 0
 	map = None
 	window = None
+	townHall = None
 
 	def SetID(self):
-		self.m_ID = BaseGameEntityClass.iNextValidID
+		self.id = BaseGameEntityClass.iNextValidID
 		BaseGameEntityClass.iNextValidID += 1
 
 	def Update(self):
@@ -25,9 +26,21 @@ class BaseGameEntityClass():
 		BaseGameEntityClass.map = map
 		BaseGameEntityClass.window = window
 
+	def PlaceStatic():
+		for node in BaseGameEntityClass.map.grid:
+			if node.isSpawn:
+				BaseGameEntityClass.townHall = Entitys.TownHall(node.id)
+			if node.numTrees > 0:
+				for x in range(0, node.numTrees):
+					tree = Entitys.Tree(x, node.id)
+					node.trees.append(tree)
+
 class EntityManager():
 	
 	entitys = {}
+
+	explorers = []
+	workers = []
 
 	def RegisterEntity(newEntity):
 		EntityManager.entitys[newEntity.id] = newEntity
@@ -35,8 +48,18 @@ class EntityManager():
 	def GetEntityFromId(id):
 		return EntityManager.entitys[id]
 
-	def RemoveEntity(entityToDel):
-		EntityManager.entitys.pop[entityToDel.id]
+	def RemoveEntity(entity):
+		try:
+			del EntityManager.entitys[entity.id]
+		except :
+		    print("error - entity not found for delete")
+
+	def add_list(explorers, workers):
+		EntityManager.explorers = explorers
+		EntityManager.workers = workers
+
+	def Del(id):
+		EntityManager.explorers.remove(EntityManager.GetEntityFromId(id))
 
 class MessageDispatcher():
     
@@ -75,7 +98,7 @@ class MovingEntity(BaseGameEntityClass):
 			distX = (self.circle.getCenter().getX() - self.map.grid[self.path[0]].center.getX())
 			distY = (self.circle.getCenter().getY() - self.map.grid[self.path[0]].center.getY())
 		except :
-		    return True
+		    return False
 
 
 		v = atan2(distY, distX)
@@ -89,5 +112,12 @@ class MovingEntity(BaseGameEntityClass):
 			dy = -distY
 
 		self.circle.move(dx, dy)
-		self.searchRectangel.move(dx, dy)
+		try:
+			self.searchRectangel.move(dx, dy)
+		except :
+		    pass
 		return self.circle.getCenter().getX() ==  self.map.grid[self.path[0]].center.getX() and self.circle.getCenter().getY() == self.map.grid[self.path[0]].center.getY()
+
+class StaticEntity(BaseGameEntityClass):
+	def function(args):
+		pass

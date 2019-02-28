@@ -10,14 +10,13 @@ pygame.init()
 done = False
 clock = pygame.time.Clock()
 
-screen = pygame.display.set_mode(windowSpecs["width"], windowSpecs["height"])
-pygame.display.set_caption(windowSpecs["windowcaption"])
+screen = pygame.display.set_mode((windowSpecs["width"], windowSpecs["height"]))
+pygame.display.set_caption("test")
 
 # change window color to white
 screen.fill((255,255,255))
 
-map = Map("Karta Laboration 2")
-map.MakeMap()
+map = Map("Karta Laboration 2.txt")
 map.MakeGrid(screen)
 
 # game loop

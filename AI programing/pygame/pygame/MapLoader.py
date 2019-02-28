@@ -1,24 +1,33 @@
 from FileLoader import *
 from JsonLoader import *
+import pygame
 
 class Map:
 	Data = None
-	width = 0
-	heigth = 0
+	screenData = None
+	mapWidth = 0
+	mapHeight = 0
+	screenWidth = 0
+	screenHeight = 0
+	indentX = 0
+	indentY = 0
 	nextID = 0
+
 	grid = []
+	screenGrid = []
 
 	def __init__(self, fileName):
 		self.Data = JsonLoader.Data["mapLoader"]
+		self.screenData = JsonLoader.Data["windowspecs"]
 		self.grid = []
 		self.MakeMap(fileName)
 
 	def MakeMap(self, fileName):
 		list = LoadFiletoList(fileName)
-		self.width = len(list[0])
+		self.mapWidth = len(list[0])
 		i = 1
 		for line in list:
-			self.heigth += 1
+			self.mapHeight += 1
 			for character in line:
 				if character	== 'X':
 					self.grid.append(Node(self.Data["nodeTypes"]["unpassableNode"], self.nextID)) #unpassable
@@ -104,7 +113,20 @@ class Map:
 	def FindNodes(self, nodeindex):
 		pos = self.grid[nodeindex].center
 
-	def MakeMap(self, screen):
+	def MakeGrid(self, screen):
+		screenWidth = self.screenWidth = self.screenData["width"]
+		screenHeight = self.screenHeight = self.screenData["height"]
+		indentX = self.indentX = self.screenWidth/self.mapWidth
+		indentY = self.indentY = self.screenHeight/self.mapHeight
+
+		for y in range(0, self.mapHeight):
+			for x in range(0, self.mapWidth):
+				node = self.grid[x + (y * self.mapWidth)]
+				node.x = x
+				node.y = y
+				self.screenGrid.append(pygame.Rect(x*indentX, y*indentY, indentX, indentY))
+				pygame.draw.rect(screen, (255,255,255,255), self.screenGrid[x+(y*self.mapWidth)])
+
 
 
 
