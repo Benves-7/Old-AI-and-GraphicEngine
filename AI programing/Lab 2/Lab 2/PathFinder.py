@@ -154,6 +154,8 @@ def BreadthFirst(map, window, start_node, end_node):
 				current = came_from[current]
 			path.append(start_node)
 			path.reverse()
+			if len(path) == 1:
+			    return None
 			return path
 	return
 

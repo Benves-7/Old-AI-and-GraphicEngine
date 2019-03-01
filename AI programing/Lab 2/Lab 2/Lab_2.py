@@ -8,10 +8,10 @@ from Entitys import *
 JsonLoader.LoadInJson()
 map = Map("Karta Laboration 2.txt")
 window = Window("map")
-BaseGameEntityClass.BindWindow(map, window)
-ResourceManager.FindTreeNodes()
 window.DrawGrid(map)
+BaseGameEntityClass.BindWindow(map, window)
 BaseGameEntityClass.PlaceStatic()
+ResourceManager.FindTreeNodes()
 window.window.autoflush = True
 workers = []
 explorers = []
@@ -20,7 +20,7 @@ i = 0
 
 
 
-while i < 10:
+while i < 25:
 	workers.append(Worker())
 	i+=1
 
@@ -35,3 +35,7 @@ while True:
 	    x.Update()
 	for x in EntityManager.workers:
 		x.Update()
+
+	ResourceManager.searchForTrees()
+
+	print("wood in kingdom: " + str(BaseGameEntityClass.townHall.wood))

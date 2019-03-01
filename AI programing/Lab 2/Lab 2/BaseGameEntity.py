@@ -1,12 +1,14 @@
 from time import *
 from Vector import *
 from math import *
+from JsonLoader import *
 import Entitys
 
 class BaseGameEntityClass():
 	iNextValidID = 0
 	map = None
 	window = None
+	data = None
 	townHall = None
 
 	def SetID(self):
@@ -25,6 +27,7 @@ class BaseGameEntityClass():
 	def BindWindow(map, window):
 		BaseGameEntityClass.map = map
 		BaseGameEntityClass.window = window
+		BaseGameEntityClass.data = JsonLoader.Data["entitys"]
 
 	def PlaceStatic():
 		for node in BaseGameEntityClass.map.grid:

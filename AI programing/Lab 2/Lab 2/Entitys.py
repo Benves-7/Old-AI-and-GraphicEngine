@@ -1,5 +1,6 @@
 from StateMachine import *
 from BaseGameEntity import *
+from Manager import *
 from State import *
 from JsonLoader import *
 from random import *
@@ -7,11 +8,16 @@ from random import *
 class Worker(MovingEntity):
 
 	# identifier.
-	id = 0
+	id = 0   # number of worker
 	FSM = None
-	pos = None
+	pos = None # number of the tile worker is on.
 	circle = None
-	speed = None
+	speed = None # speedmodifier
+
+	startTime = 0
+	freezeTime = 0
+	carrying = {}
+
 	path = []
 	pathBack = []
 
@@ -19,8 +25,9 @@ class Worker(MovingEntity):
 
 	def __init__(self):
 		self.SetID()
-		self.path = []
+		self.path = None
 		self.pathBack = []
+		self.carrying = {}
 		self.FSM = StateMachine(self)
 		self.FSM.SetCurrentState(Begin_Life_Worker())
 		self.FSM.SetGlobalState(WorkerGlobalState())
@@ -29,9 +36,9 @@ class Worker(MovingEntity):
 			if node.isSpawn:
 				self.pos = node.id
 				self.circle = node.center
-		self.speed = JsonLoader.Data["worker"]["speed"]
+		self.speed = self.data["worker"]["speed"]
 		self.circle = Circle(self.circle,3)
-		self.circle.setFill(JsonLoader.Data["worker"]["color"])
+		self.circle.setFill(self.data["worker"]["color"])
 
 
 	def Update(self):
@@ -48,7 +55,7 @@ class Explorer(MovingEntity):
 	pos = None
 	searchRectangel = None
 	speed = None
-	path = []
+	path = None
 	pathBack = []
 	failedPathFindingAttempts = 0
 
@@ -58,15 +65,14 @@ class Explorer(MovingEntity):
 		EntityManager.RemoveEntity(self)
 		EntityManager.RegisterEntity(self)
 		self.circle = worker.circle
-		self.circle.setFill(JsonLoader.Data["explorer"]["color"])
-		center = self.circle.getCenter()
+		self.circle.setFill(self.data["explorer"]["color"])
 		self.pathBack = []
 		self.searchRectangel = Rectangle(Point(center.getX() - 150, center.getY() + 150),Point(center.getX() + 150, center.getY() - 150))
 		#self.searchRectangel.draw(self.window.window)
 		self.FSM = StateMachine(self)
 		self.FSM.SetCurrentState(Begin_Life_Explorer())
 		self.FSM.SetGlobalState(ExplorerGlobalState())
-		self.speed = JsonLoader.Data["explorer"]["speed"]
+		self.speed = self.data["explorer"]["speed"]
 
 	def Update(self):
 	    self.FSM.Update()
@@ -78,17 +84,49 @@ class Explorer(MovingEntity):
 			for tree in range(0, self.map.grid[nodeindex].numTrees):
 				self.map.grid[nodeindex].trees.append(Tree(tree, nodeindex))
 				self.map.grid[nodeindex].trees[-1].circle.draw(self.window.window)
+			if self.map.grid[nodeindex].trees:
+				ResourceManager.treenodes.append(self.map.grid[nodeindex])
+				self.map.grid[nodeindex].dist = ((abs(self.map.grid[nodeindex].x - self.map.grid[self.townHall.pos].x))) + ((abs(self.map.grid[nodeindex].y - self.map.grid[self.townHall.pos].y)))
 
 	def Del(self):
 		self.circle.undraw()
 		EntityManager.Del(self.id)
 
+class Builder(MovingEntity):
+
+	# identifier.
+	id = 0   # number of worker
+	FSM = None
+	pos = None # number of the tile worker is on.
+	circle = None
+	speed = None # speedmodifier
+
+	startTime = 0
+	freezeTime = 0
+
+	path = []
+
+	def __init__(self, worker):
+		self.id = worker.id
+		self.pos = worker.pos
+		EntityManager.RemoveEntity(self)
+		EntityManager.RegisterEntity(self)
+		self.circle = worker.circle
+		self.circle.setFill(self.data["builder"]["color"])
+		self.FSM = StateMachine(self)
+		self.FSM.SetCurrentState(Begin_Life_Builder())
+		self.FSM.SetGlobalState(BuilderGlobalState())
+		self.speed = self.data["builder"]["speed"]
+
+
 class TownHall(StaticEntity):
 	pos = 0
 	circle = None
+	wood = 0
 
 	def __init__(self, pos):
 		self.pos = pos
+		self.map.grid[pos].isbuildable = False
 		self.circle = Circle(self.map.grid[pos].center, 6)
 		self.circle.setFill("Dark Blue")
 		self.circle.draw(self.window.window)
@@ -100,8 +138,8 @@ class Tree(StaticEntity):
 	def __init__(self, id, nodeindex):
 		self.id = id
 
-		moveX = uniform(-self.window.indent_X/2, self.window.indent_X/2)
-		moveY = uniform(-self.window.indent_Y/2, self.window.indent_Y/2)
+		moveX = uniform(-self.window.indent_X/3, self.window.indent_X/3)
+		moveY = uniform(-self.window.indent_Y/3, self.window.indent_Y/3)
 
 		self.circle = Circle(Point(self.map.grid[nodeindex].center.getX() + moveX, self.map.grid[nodeindex].center.getY() + moveY), 2)
 		self.circle.setFill("lightGreen")

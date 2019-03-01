@@ -62,14 +62,25 @@
 		"fogofwar": 1,
 		"fogofwarcolor": "dark gray"
 		},
-	"explorer":
+	"entitys":
 		{
-		"speed": 1.0,
-		"color": "red"
-		},
-	"worker":
-		{
-		"speed": 1.0,
-		"color": "yellow"
+		"explorer":
+			{
+			"goalnumber": 4,
+			"speed": 1.0,
+			"color": "red"
+			},
+		"worker":
+			{
+			"goalnumber": 1,
+			"speed": 1.0,
+			"color": "yellow"
+			},
+		"builder":
+			{
+			"goalnumber": 1,
+			"speed": 1.0,
+			"color": "blue"
+			}
 		}
 }

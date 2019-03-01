@@ -132,11 +132,13 @@ class Node():
 	isbuildable = False
 	isKnown = False
 
+	building = None
+
 	#stats
 	speed = 0
 	numTrees = 0
 	treesLeft = 0
-	trees = []
+	trees = None
 
 	# Identifer.
 	id = 0
@@ -145,6 +147,7 @@ class Node():
 	x = 0
 	y = 0
 	f = 0
+	dist = 0
 
 	# centerpoint.
 	center = None
@@ -160,7 +163,8 @@ class Node():
 		self.isbuildable = bool(Data["isBuildable"])
 
 		if "numTrees" in Data:
-			self.numTrees = self.treesLeft = Data["numTrees"]
+			self.numTrees = self.treesLeft = self.treesReserved = Data["numTrees"]
+			self.trees = []
 		if "isBorder" in Data:
 			self.isBorder = bool(Data["isBorder"])
 
