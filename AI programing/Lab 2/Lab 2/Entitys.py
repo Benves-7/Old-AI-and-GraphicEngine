@@ -67,8 +67,6 @@ class Explorer(MovingEntity):
 		self.circle = worker.circle
 		self.circle.setFill(self.data["explorer"]["color"])
 		self.pathBack = []
-		self.searchRectangel = Rectangle(Point(center.getX() - 150, center.getY() + 150),Point(center.getX() + 150, center.getY() - 150))
-		#self.searchRectangel.draw(self.window.window)
 		self.FSM = StateMachine(self)
 		self.FSM.SetCurrentState(Begin_Life_Explorer())
 		self.FSM.SetGlobalState(ExplorerGlobalState())
@@ -128,7 +126,19 @@ class TownHall(StaticEntity):
 		self.pos = pos
 		self.map.grid[pos].isbuildable = False
 		self.circle = Circle(self.map.grid[pos].center, 6)
-		self.circle.setFill("Dark Blue")
+		self.circle.setFill(self.data["townhall"]["color"])
+		self.circle.draw(self.window.window)
+
+class ColeMil(StaticEntity):
+	pos = 0
+	circle = None
+	color = None
+
+	def __init__(self, pos):
+		self.pos = pos
+		self.map.grid[pos].isBuildable = False
+		self.circle = Circle(self.map.grid[pos].center, 6)
+		self.color = self.data["colemil"]["color"]
 		self.circle.draw(self.window.window)
 
 class Tree(StaticEntity):

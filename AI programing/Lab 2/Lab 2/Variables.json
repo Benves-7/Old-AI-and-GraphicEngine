@@ -81,6 +81,14 @@
 			"goalnumber": 1,
 			"speed": 1.0,
 			"color": "blue"
+			},
+		"townhall":
+			{
+			"color": "Dark Blue"
+			},
+		"colemil":
+			{
+			"color": "Purple"
 			}
 		}
 }

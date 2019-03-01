@@ -53,6 +53,18 @@ class Map:
 			neighbours.append(id + self.width)
 		return neighbours
 
+	def FindBuildingSite(self, townHall):
+		buildingsites = []
+		if self.grid[townHall - 2].buildable and self.grid[townHall - 2].isKnown: #left
+			neighbours.append(townHall - 2)
+		if self.grid[townHall - self.width * 2].isbuildable and self.grid[townHall - self.width * 2].isKnown: #up
+			neighbours.append(townHall - self.width * 2)
+		if self.grid[townHall + 2].isbuildable and self.grid[townHall + 2].isKnown: #right
+			neighbours.append(townHall + 1)
+		if self.grid[townHall + self.width * 2].isbuildable and self.grid[townHall + self.width * 2].isKnown: #down
+			neighbours.append(townHall + self.width * 2)
+		return buildingsites
+
 	def FindNeighboursAll(self, id):
 		
 		left = False

@@ -60,13 +60,10 @@ class WorkerGlobalState(State):
 
 	def Execute(self, worker):
 		if ResourceManager.treesAreKnown:
-			worker.FSM.Changestate(GoingToWork())
 			if worker.path == None:
 				worker.path = BreadthFirst(worker.map, worker.window, worker.pos, ResourceManager.ClosestTreeNode())
 				if ResourceManager.bestNode:
 					ResourceManager.bestNode.treesReserved -= 1
-		else:
-			worker.FSM.ChangeState(IDLE())
 
 	def Exit(self, worker):
 		return 1
@@ -125,8 +122,16 @@ class TransportBack(State):
 				worker.path = None
 				worker.pathBack = []
 				worker.FSM.ChangeState(GoingToWork())
-	return
+		return
 
 
 # Builders -------------------------------
+class BuilderGlobalState(State):
+	def Execute(self, builder):
+		if builder.pos == None:
+			buildingsites = self.map.FindBuildingSite(builder.townHall.pos)
+
+class Begin_Life_Builder(State):
+    def Execute(self, builder):
+    	pass
 
