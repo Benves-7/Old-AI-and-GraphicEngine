@@ -10,6 +10,7 @@ class BaseGameEntityClass():
 	window = None
 	data = None
 	townHall = None
+	coleMil = None
 
 	def SetID(self):
 		self.id = BaseGameEntityClass.iNextValidID
@@ -37,6 +38,7 @@ class BaseGameEntityClass():
 				for x in range(0, node.numTrees):
 					tree = Entitys.Tree(x, node.id)
 					node.trees.append(tree)
+		return
 
 class EntityManager():
 	
@@ -44,6 +46,7 @@ class EntityManager():
 
 	explorers = []
 	workers = []
+	builders = []
 
 	def RegisterEntity(newEntity):
 		EntityManager.entitys[newEntity.id] = newEntity
@@ -57,9 +60,10 @@ class EntityManager():
 		except :
 		    print("error - entity not found for delete")
 
-	def add_list(explorers, workers):
+	def add_list(explorers, workers, builders):
 		EntityManager.explorers = explorers
 		EntityManager.workers = workers
+		EntityManager.builders = builders
 
 	def Del(id):
 		EntityManager.explorers.remove(EntityManager.GetEntityFromId(id))
@@ -122,5 +126,6 @@ class MovingEntity(BaseGameEntityClass):
 		return self.circle.getCenter().getX() ==  self.map.grid[self.path[0]].center.getX() and self.circle.getCenter().getY() == self.map.grid[self.path[0]].center.getY()
 
 class StaticEntity(BaseGameEntityClass):
-	def function(args):
-		pass
+	
+	def Fill(self, entity):
+		entity.circle.setFill(entity.color)

@@ -1,5 +1,6 @@
 from PathFinder import *
 from Manager import *
+from JsonLoader import *
 
 class State():
 	def Enter(self, entity):
@@ -11,10 +12,19 @@ class State():
 	def OnMessage(entity, telegram):
 		pass
 
+	def __eq__(self, other):
+		if isinstance(other, self.__class__):
+			return self.__dict__ == other.__dict__
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 class DEAD(State):
 	def Execute(self, explorer):
 		explorer.Del()
 
+class IDLE(State):
+	def Execute(self, worker):
+		return 0 # Skip turn...
 
 # Explorer--------------------------------
 class ExplorerGlobalState(State):
@@ -59,26 +69,22 @@ class WorkerGlobalState(State):
 		return 1
 
 	def Execute(self, worker):
-		if ResourceManager.treesAreKnown:
+		if ResourceManager.treesAreKnown and worker.FSM.isInState(IDLE()):
 			if worker.path == None:
 				worker.path = BreadthFirst(worker.map, worker.window, worker.pos, ResourceManager.ClosestTreeNode())
 				if ResourceManager.bestNode:
 					ResourceManager.bestNode.treesReserved -= 1
+				worker.FSM.ChangeState(GoingToWork())
 
 	def Exit(self, worker):
 		return 1
-
-class IDLE(State):
-	def Execute(self, worker):
-		#skip
-		return 0
 
 class Begin_Life_Worker(State):
 	def Enter(self, worker):
 		return 1
 	def Execute(self, worker):
 		worker.circle.draw(worker.window.window)
-		worker.FSM.ChangeState(GoingToWork())
+		worker.FSM.ChangeState(IDLE())
 	def Exit(self, worker):
 		return 1
 
@@ -121,17 +127,57 @@ class TransportBack(State):
 				worker.townHall.wood += 1
 				worker.path = None
 				worker.pathBack = []
-				worker.FSM.ChangeState(GoingToWork())
+				worker.FSM.ChangeState(IDLE())
 		return
 
 
 # Builders -------------------------------
 class BuilderGlobalState(State):
 	def Execute(self, builder):
-		if builder.pos == None:
-			buildingsites = self.map.FindBuildingSite(builder.townHall.pos)
+		if not builder.colemil and builder.townHall.wood > JsonLoader.Data["entitys"]["colemil"]["cost"] and builder.FSM.isInState(IDLE()):
+			builder.path = BreadthFirst(builder.map, builder.window, builder.pos, builder.map.FindBuildingSite(builder.townHall)[0])
+			builder.FSM.ChangeState(GoToBuildingSite())
+		return
 
 class Begin_Life_Builder(State):
-    def Execute(self, builder):
-    	pass
+	def Execute(self, builder):
+		builder.circle.draw(builder.window.window)
+		builder.FSM.ChangeState(IDLE())
 
+class GoToBuildingSite(State):
+	def Execute(self, builder):
+		if builder.GoTowards():
+			builder.pos = builder.path.pop(0)
+			if len(builder.path) == 0:
+				builder.FSM.ChangeState(Build())
+		return
+
+class Build(State):
+	def Enter(self, builder):
+		builder.startTime = time()
+		BaseGameEntityClass.coleMil = Entitys.ColeMil(builder.pos)
+
+	def Execute(self, builder):
+		builder.freezeTime = time()
+		if not builder.colemil and builder.freezeTime - builder.startTime > JsonLoader.Data["entitys"]["colemil"]["time"]:
+			BaseGameEntityClass.coleMil.circle.setFill(BaseGameEntityClass.coleMil.color)
+			BaseGameEntityClass.townHall.wood -= 10
+			builder.colemil = True
+			builder.FSM.ChangeState(IDLE())
+		return
+
+
+# Hanterkare -----------------------------
+class FineWorkerGlobalState(State):
+	def Execute(self, fineWorker):
+		if fineWorker.coleMil:
+		    pass
+
+class Begin_Life_Fine_Worker(State):
+	def Execute(self, fineWorker):
+		fineWorker.circle.draw(builder.window.window)
+		fineWorker.FSM.ChangeState(IDLE())
+
+class WorkInColeMil(State):
+	def Execute(self, fineWorker):
+		pass

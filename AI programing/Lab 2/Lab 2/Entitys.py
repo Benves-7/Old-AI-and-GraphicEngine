@@ -99,6 +99,13 @@ class Builder(MovingEntity):
 	circle = None
 	speed = None # speedmodifier
 
+	# buildings built.
+	colemil = False
+	smithy = False
+	steelmil = False
+	botcamp = False
+
+	# used to time durations of things.
 	startTime = 0
 	freezeTime = 0
 
@@ -115,6 +122,9 @@ class Builder(MovingEntity):
 		self.FSM.SetCurrentState(Begin_Life_Builder())
 		self.FSM.SetGlobalState(BuilderGlobalState())
 		self.speed = self.data["builder"]["speed"]
+
+	def Update(self):
+	    self.FSM.Update()
 
 
 class TownHall(StaticEntity):

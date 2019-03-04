@@ -30,7 +30,7 @@ class ResourceManager(Manager):
 				ResourceManager.treenodes.remove(node)
 		if len(ResourceManager.treenodes) == 0:
 			return True
-
+	
 	def ClosestTreeNode():
 
 		treenodes = ResourceManager.treenodes #
@@ -44,9 +44,13 @@ class ResourceManager(Manager):
 				return BaseGameEntityClass.townHall.pos
 			dist = 10000
 			for node in ResourceManager.treenodes:
-				if node.treesReserved > 1:
+				if node.treesReserved >= 1:
 					if node.dist < dist:
 						ResourceManager.bestNode = node
 						dist = node.dist
 
 		return ResourceManager.bestNode.id
+
+
+class TrainingManager(Manager):
+    pass

@@ -46,7 +46,7 @@ class StateMachine():
 		return self.ownerPreviousState
 
 	def isInState(self, state):
-		if self.ownerCurrentState == state:
+		if self.CurrentState() == state:
 		    return True
 		else:
 			return False

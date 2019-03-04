@@ -56,7 +56,7 @@
 		{
 		"width": 1200,
 		"height": 1200,
-		"offset": "+1911-680",
+		"offset": "+1911-700",
 		"pathcolor": "yellow",
 		"gridnumbering": 0,
 		"fogofwar": 1,
@@ -68,7 +68,8 @@
 			{
 			"goalnumber": 4,
 			"speed": 1.0,
-			"color": "red"
+			"color": "red",
+			"time": 12
 			},
 		"worker":
 			{
@@ -80,7 +81,8 @@
 			{
 			"goalnumber": 1,
 			"speed": 1.0,
-			"color": "blue"
+			"color": "blue",
+			"time": 12
 			},
 		"townhall":
 			{
@@ -88,7 +90,9 @@
 			},
 		"colemil":
 			{
-			"color": "Purple"
+			"color": "Purple",
+			"cost": 10,
+			"time": 12
 			}
 		}
 }
