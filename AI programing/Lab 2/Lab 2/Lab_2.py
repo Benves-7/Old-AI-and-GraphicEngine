@@ -3,6 +3,7 @@ from Window import *
 from PathFinder import *
 from JsonLoader import *
 from Entitys import *
+from os import system
 
 
 JsonLoader.LoadInJson()
@@ -12,16 +13,21 @@ window.DrawGrid(map)
 BaseGameEntityClass.BindWindow(map, window)
 BaseGameEntityClass.PlaceStatic()
 ResourceManager.FindTreeNodes()
-window.window.autoflush = True
+#window.window.autoflush = True
 drawnow = True
 tick = 0
+tickstart = 0
 workers = []
 explorers = []
 builders = []
 fineworkers = []
+t = perf_counter() - t
+print("explorer time: " + str(t))
+
+
 
 i = 0
-while i < 50:
+while i < 25:
 	workers.append(Worker())
 	i+=1
 
@@ -37,42 +43,27 @@ while i < 1:
 	i += 1
 
 EntityManager.add_list(explorers, workers, builders, fineworkers)
+tickstart = perf_counter()
 
 while True:
-	t = time()
-	if drawnow:
+	tick = perf_counter()
 
-		for x in EntityManager.explorers:
-		    x.Update()
-		for x in EntityManager.workers:
-			x.Update()
-		for x in EntityManager.builders:
-			x.Update()
-		for x in EntityManager.fineworkers:
-		    x.Update()
+	for x in EntityManager.explorers:
+		x.Update()
 
-		ResourceManager.searchForTrees()
+	for x in EntityManager.workers:
+		x.Update()
 
-		t = time() - t
-		if t > 1:
-			window.window.autoflush = False
-			drawnow = False
+	for x in EntityManager.builders:
+		x.Update()
 
-	else:
-		for x in EntityManager.explorers:
-		    x.Update()
-		for x in EntityManager.workers:
-			x.Update()
-		for x in EntityManager.builders:
-			x.Update()
-		for x in EntityManager.fineworkers:
-		    x.Update()
+	for x in EntityManager.fineworkers:
+		x.Update()
 
-		ResourceManager.searchForTrees()
-		tick = time  ##make a tick based update..
+	ResourceManager.searchForTrees()
 
+	if tick - tickstart > 4:
 		window.window.update()
 
-
-	print("wood in kingdom: " + str(BaseGameEntityClass.townHall.wood))
-	print("coal in kingdom: " + str(BaseGameEntityClass.townHall.charcoal))
+	clear = lambda: system('cls')
+	clear()

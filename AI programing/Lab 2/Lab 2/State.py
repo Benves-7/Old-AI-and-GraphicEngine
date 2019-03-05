@@ -45,45 +45,35 @@ class ExplorerGlobalState(State):
 		return 1
 
 class Begin_Life_Explorer(State):
-	def Enter(self, explorer):
-		return 1
 	def Execute(self, explorer):
 		explorer.circle.draw(explorer.window.window)
 		explorer.FSM.ChangeState(Explore())
 		explorer.ExploreNeighbours()
-	def Exit(self, explorer):
-		return 1
 
 class Explore(State):
-	def Enter(self, explorer):
-		return 1
-
 	def Execute(self, explorer):
 		if explorer.GoTowards():
 			explorer.pos = explorer.path.pop(0)
 			explorer.ExploreNeighbours()
 			if len(explorer.path) == 0:
 				explorer.path = None
-	
-	def Exit(self, explorer):
-		return 1
-
+		return
 
 # Workers --------------------------------
 class WorkerGlobalState(State):
-	def Enter(self, worker):
-		return 1
+	PathToBestNode = None
 
 	def Execute(self, worker):
 		if ResourceManager.treesAreKnown and worker.FSM.isInState(IDLE()):
 			if worker.path == None:
-				worker.path = BreadthFirst(worker.map, worker.window, worker.pos, ResourceManager.ClosestTreeNode())
+				if WorkerGlobalState.PathToBestNode and ResourceManager.bestNode.treesReserved > 0:
+					worker.path = WorkerGlobalState.PathToBestNode.copy()
+				else:
+					WorkerGlobalState.PathToBestNode = worker.path = BreadthFirst(worker.map, worker.window, worker.pos, ResourceManager.ClosestTreeNode())
 				if ResourceManager.bestNode:
 					ResourceManager.bestNode.treesReserved -= 1
 				worker.FSM.ChangeState(GoingToWork())
-
-	def Exit(self, worker):
-		return 1
+		return
 
 class Begin_Life_Worker(State):
 	def Enter(self, worker):
