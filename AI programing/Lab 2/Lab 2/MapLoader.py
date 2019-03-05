@@ -2,7 +2,7 @@ from FileLoader import *
 from JsonLoader import *
 from Entitys import *
 
-class Map:
+class Map():
 	Data = None
 	width = 0
 	heigth = 0

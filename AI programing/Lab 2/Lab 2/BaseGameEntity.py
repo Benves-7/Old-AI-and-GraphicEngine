@@ -25,11 +25,6 @@ class BaseGameEntityClass():
 	def HandelMessage(self, telegram):
 	    return self.FSM.HandelMessage(telegram)
 
-	def BindWindow(map, window):
-		BaseGameEntityClass.map = map
-		BaseGameEntityClass.window = window
-		BaseGameEntityClass.data = JsonLoader.Data["entitys"]
-
 	def PlaceStatic():
 		for node in BaseGameEntityClass.map.grid:
 			if node.isSpawn:

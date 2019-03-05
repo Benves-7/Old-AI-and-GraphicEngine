@@ -1,69 +1,37 @@
-from MapLoader import *
-from Window import *
-from PathFinder import *
-from JsonLoader import *
-from Entitys import *
 from os import system
+from Manager import *
 
 
-JsonLoader.LoadInJson()
-map = Map("Karta Laboration 2.txt")
-window = Window("map")
-window.DrawGrid(map)
-BaseGameEntityClass.BindWindow(map, window)
-BaseGameEntityClass.PlaceStatic()
-ResourceManager.FindTreeNodes()
-#window.window.autoflush = True
-drawnow = True
+Manager.Start()
+clear = lambda: os.system('cls')
+
 tick = 0
 tickstart = 0
-workers = []
-explorers = []
-builders = []
-fineworkers = []
-t = perf_counter() - t
-print("explorer time: " + str(t))
+
+timeaverage = 0
+loops = 0
 
 
 
-i = 0
-while i < 25:
-	workers.append(Worker())
-	i+=1
-
-i = 0
-while i < JsonLoader.Data["entitys"]["explorer"]["goalnumber"]:
-	explorers.append(Explorer(workers.pop()))
-	i += 1
-
-i = 0
-while i < 1:
-	builders.append(Builder(workers.pop()))
-	fineworkers.append(FineWorker(workers.pop()))
-	i += 1
-
-EntityManager.add_list(explorers, workers, builders, fineworkers)
 tickstart = perf_counter()
-
+BaseGameEntityClass.window.window.update()
 while True:
 	tick = perf_counter()
-
-	for x in EntityManager.explorers:
-		x.Update()
-
-	for x in EntityManager.workers:
-		x.Update()
-
-	for x in EntityManager.builders:
-		x.Update()
-
-	for x in EntityManager.fineworkers:
-		x.Update()
-
-	ResourceManager.searchForTrees()
+	t = perf_counter()
+	Manager.Update()
+	t = perf_counter() - t
+	timeaverage += t
+	loops += 1
 
 	if tick - tickstart > 4:
-		window.window.update()
-
-	clear = lambda: system('cls')
-	clear()
+		BaseGameEntityClass.window.window.update()
+		tickstart = perf_counter()
+		clear()
+		print("|---------------------------------------------|")
+		print("num of loops: " + str(loops))
+		print("total time spent: " + str(timeaverage))
+		print("average time per loop: " + str(timeaverage / loops))
+		timeaverage = 0
+		loops = 0
+		print("wood in kingdom: " + str(BaseGameEntityClass.townHall.wood))
+		print("coal in kingdom: " + str(BaseGameEntityClass.townHall.charcoal))

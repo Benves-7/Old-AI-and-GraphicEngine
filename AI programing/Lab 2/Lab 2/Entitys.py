@@ -1,6 +1,6 @@
 from StateMachine import *
 from BaseGameEntity import *
-from Manager import *
+import Manager
 from State import *
 from JsonLoader import *
 from random import *
@@ -86,7 +86,7 @@ class Explorer(MovingEntity):
 				self.map.grid[nodeindex].trees.append(Tree(tree, nodeindex))
 				self.map.grid[nodeindex].trees[-1].circle.draw(self.window.window)
 			if self.map.grid[nodeindex].trees:
-				ResourceManager.treenodes.append(self.map.grid[nodeindex])
+				Manager.ResourceManager.treenodes.append(self.map.grid[nodeindex])
 				self.map.grid[nodeindex].dist = ((abs(self.map.grid[nodeindex].x - self.map.grid[self.townHall.pos].x))) + ((abs(self.map.grid[nodeindex].y - self.map.grid[self.townHall.pos].y)))
 
 	def Del(self):

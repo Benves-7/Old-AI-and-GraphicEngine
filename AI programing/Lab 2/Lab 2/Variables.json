@@ -64,6 +64,7 @@
 		},
 	"entitys":
 		{
+		"numentitys": 25,
 		"explorer":
 			{
 			"goalnumber": 7,

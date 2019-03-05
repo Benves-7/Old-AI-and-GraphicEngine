@@ -1,6 +1,8 @@
 from PathFinder import *
-from Manager import *
 from JsonLoader import *
+from BaseGameEntity import *
+import Entitys
+import Manager
 
 class State():
 	def Enter(self, entity):
@@ -46,7 +48,7 @@ class ExplorerGlobalState(State):
 
 class Begin_Life_Explorer(State):
 	def Execute(self, explorer):
-		explorer.circle.draw(explorer.window.window)
+		explorer.circle.setFill(JsonLoader.Data["entitys"]["explorer"]["color"])
 		explorer.FSM.ChangeState(Explore())
 		explorer.ExploreNeighbours()
 
@@ -64,14 +66,14 @@ class WorkerGlobalState(State):
 	PathToBestNode = None
 
 	def Execute(self, worker):
-		if ResourceManager.treesAreKnown and worker.FSM.isInState(IDLE()):
+		if Manager.ResourceManager.treesAreKnown and worker.FSM.isInState(IDLE()):
 			if worker.path == None:
-				if WorkerGlobalState.PathToBestNode and ResourceManager.bestNode.treesReserved > 0:
+				if WorkerGlobalState.PathToBestNode and Manager.ResourceManager.bestNode.treesReserved > 0:
 					worker.path = WorkerGlobalState.PathToBestNode.copy()
 				else:
-					WorkerGlobalState.PathToBestNode = worker.path = BreadthFirst(worker.map, worker.window, worker.pos, ResourceManager.ClosestTreeNode())
-				if ResourceManager.bestNode:
-					ResourceManager.bestNode.treesReserved -= 1
+					WorkerGlobalState.PathToBestNode = worker.path = BreadthFirst(worker.map, worker.window, worker.pos, Manager.ResourceManager.ClosestTreeNode())
+				if Manager.ResourceManager.bestNode:
+					Manager.ResourceManager.bestNode.treesReserved -= 1
 				worker.FSM.ChangeState(GoingToWork())
 		return
 
@@ -137,7 +139,7 @@ class BuilderGlobalState(State):
 
 class Begin_Life_Builder(State):
 	def Execute(self, builder):
-		builder.circle.draw(builder.window.window)
+		builder.circle.setFill(JsonLoader.Data["entitys"]["builder"]["color"])
 		builder.FSM.ChangeState(IDLE())
 
 class GoToBuildingSite(State):
@@ -174,7 +176,7 @@ class FineWorkerGlobalState(State):
 
 class Begin_Life_Fine_Worker(State):
 	def Execute(self, fineWorker):
-		fineWorker.circle.draw(fineWorker.window.window)
+		fineWorker.circle.setFill(JsonLoader.Data["entitys"]["fineworker"]["color"])
 		fineWorker.FSM.ChangeState(IDLE())
 
 class GoToWork(State):
