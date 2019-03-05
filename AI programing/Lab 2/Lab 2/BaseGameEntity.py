@@ -47,6 +47,7 @@ class EntityManager():
 	explorers = []
 	workers = []
 	builders = []
+	fineworkers = []
 
 	def RegisterEntity(newEntity):
 		EntityManager.entitys[newEntity.id] = newEntity
@@ -60,10 +61,11 @@ class EntityManager():
 		except :
 		    print("error - entity not found for delete")
 
-	def add_list(explorers, workers, builders):
+	def add_list(explorers, workers, builders, fineworkers):
 		EntityManager.explorers = explorers
 		EntityManager.workers = workers
 		EntityManager.builders = builders
+		EntityManager.fineworkers = fineworkers
 
 	def Del(id):
 		EntityManager.explorers.remove(EntityManager.GetEntityFromId(id))

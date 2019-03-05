@@ -66,10 +66,11 @@
 		{
 		"explorer":
 			{
-			"goalnumber": 4,
+			"goalnumber": 7,
 			"speed": 1.0,
 			"color": "red",
-			"time": 12
+			"time": 12,
+			"maxdist": 10
 			},
 		"worker":
 			{
@@ -82,6 +83,13 @@
 			"goalnumber": 1,
 			"speed": 1.0,
 			"color": "blue",
+			"time": 12
+			},
+		"fineworker":
+			{
+			"goalnumber": 1,
+			"speed": 1.0,
+			"color": "gray",
 			"time": 12
 			},
 		"townhall":

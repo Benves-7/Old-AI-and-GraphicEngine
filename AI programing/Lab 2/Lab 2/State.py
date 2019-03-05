@@ -32,8 +32,14 @@ class ExplorerGlobalState(State):
 		return 1
 
 	def Execute(self, explorer):
-		if explorer.path == None:
-			explorer.path = A_Star(explorer.map, explorer.window, explorer.pos)
+		if explorer.path == None and explorer.failedPathFindingAttempts < 200:
+			explorer.path = A_Star(explorer.map, explorer, explorer.pos)
+		elif explorer.path == None and explorer.failedPathFindingAttempts >= 200:
+			for node in explorer.map.grid:
+				if not node.isKnown:
+					end_node = node.id
+					break
+			explorer.path = BreadthFirst(explorer.map, explorer.window, explorer.pos, end_node)
 
 	def Exit(self, explorer):
 		return 1
@@ -134,7 +140,7 @@ class TransportBack(State):
 # Builders -------------------------------
 class BuilderGlobalState(State):
 	def Execute(self, builder):
-		if not builder.colemil and builder.townHall.wood > JsonLoader.Data["entitys"]["colemil"]["cost"] and builder.FSM.isInState(IDLE()):
+		if not builder.colemil and builder.townHall.wood >= JsonLoader.Data["entitys"]["colemil"]["cost"] and builder.FSM.isInState(IDLE()):
 			builder.path = BreadthFirst(builder.map, builder.window, builder.pos, builder.map.FindBuildingSite(builder.townHall)[0])
 			builder.FSM.ChangeState(GoToBuildingSite())
 		return
@@ -163,6 +169,7 @@ class Build(State):
 			BaseGameEntityClass.coleMil.circle.setFill(BaseGameEntityClass.coleMil.color)
 			BaseGameEntityClass.townHall.wood -= 10
 			builder.colemil = True
+			builder.coleMil.complete = True
 			builder.FSM.ChangeState(IDLE())
 		return
 
@@ -170,14 +177,32 @@ class Build(State):
 # Hanterkare -----------------------------
 class FineWorkerGlobalState(State):
 	def Execute(self, fineWorker):
-		if fineWorker.coleMil:
-		    pass
+		if fineWorker.coleMil and fineWorker.coleMil.complete and fineWorker.FSM.isInState(IDLE()):
+			fineWorker.path = BreadthFirst(fineWorker.map, fineWorker.window, fineWorker.pos, fineWorker.map.FindBuildingSite(fineWorker.townHall)[0])
+			fineWorker.FSM.ChangeState(GoToWork())
+		return
 
 class Begin_Life_Fine_Worker(State):
 	def Execute(self, fineWorker):
-		fineWorker.circle.draw(builder.window.window)
+		fineWorker.circle.draw(fineWorker.window.window)
 		fineWorker.FSM.ChangeState(IDLE())
 
-class WorkInColeMil(State):
+class GoToWork(State):
 	def Execute(self, fineWorker):
-		pass
+		if fineWorker.GoTowards():
+			fineWorker.pos = fineWorker.path.pop(0)
+			if len(fineWorker.path) == 0:
+				fineWorker.FSM.ChangeState(MakeCharcoal())
+		return
+
+class MakeCharcoal(State):
+	def Enter(self, fineWorker):
+		fineWorker.startTime = time()
+
+	def Execute(self, fineWorker):
+		fineWorker.freezeTime = time()
+		t = fineWorker.freezeTime - fineWorker.startTime
+		if fineWorker.freezeTime - fineWorker.startTime > 3 and fineWorker.townHall.wood > 2:
+			fineWorker.townHall.charcoal += 1
+			fineWorker.townHall.wood -= 2
+			fineWorker.startTime = time()

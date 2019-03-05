@@ -58,6 +58,8 @@ class Explorer(MovingEntity):
 	path = None
 	pathBack = []
 	failedPathFindingAttempts = 0
+	maxDist = None
+
 
 	def __init__(self, worker):
 		self.id = worker.id
@@ -71,6 +73,7 @@ class Explorer(MovingEntity):
 		self.FSM.SetCurrentState(Begin_Life_Explorer())
 		self.FSM.SetGlobalState(ExplorerGlobalState())
 		self.speed = self.data["explorer"]["speed"]
+		self.maxDist = self.data["explorer"]["maxdist"]
 
 	def Update(self):
 	    self.FSM.Update()
@@ -126,11 +129,40 @@ class Builder(MovingEntity):
 	def Update(self):
 	    self.FSM.Update()
 
+class FineWorker(MovingEntity):
+	# identifier.
+	id = 0   # number of worker
+	FSM = None
+	pos = None # number of the tile worker is on.
+	circle = None
+	speed = None # speedmodifier
+
+	# used to time durations of things.
+	startTime = 0
+	freezeTime = 0
+
+	path = []
+
+	def __init__(self, worker):
+		self.id = worker.id
+		self.pos = worker.pos
+		EntityManager.RemoveEntity(self)
+		EntityManager.RegisterEntity(self)
+		self.circle = worker.circle
+		self.circle.setFill(self.data["fineworker"]["color"])
+		self.FSM = StateMachine(self)
+		self.FSM.SetCurrentState(Begin_Life_Fine_Worker())
+		self.FSM.SetGlobalState(FineWorkerGlobalState())
+		self.speed = self.data["fineworker"]["speed"]
+
+	def Update(self):
+	    self.FSM.Update()
 
 class TownHall(StaticEntity):
 	pos = 0
 	circle = None
 	wood = 0
+	charcoal = 0
 
 	def __init__(self, pos):
 		self.pos = pos
@@ -143,6 +175,7 @@ class ColeMil(StaticEntity):
 	pos = 0
 	circle = None
 	color = None
+	complete = False
 
 	def __init__(self, pos):
 		self.pos = pos

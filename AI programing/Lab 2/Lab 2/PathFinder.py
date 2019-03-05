@@ -18,15 +18,15 @@ class Node():
 	def __eq__(self, other):
 		return self.position == other.position 
 
-def NotToFar(map, start_node, end_node):
+def NotToFar(map, start_node, end_node, maxdist):
 	h = ((abs(map.grid[start_node].x - map.grid[end_node].x)*10)) + ((abs(map.grid[start_node].y - map.grid[end_node].y) *10))
-	if h > 50:
+	if h > maxdist:
 		return False
 	else:
 		return True
 
 
-def A_Star(map, window, currpos = None, end_node = None):
+def A_Star(map, searcher, currpos = None, end_node = None):
 	starttime = time()
 	# Returns a list of tuples as a path from given start to given end in the given maze.
 	# Create start and end node.
@@ -34,16 +34,19 @@ def A_Star(map, window, currpos = None, end_node = None):
 	if not end_node == None:
 		end_node = Node(None, end_node)
 	else:
+		maxDist = searcher.maxDist
 		#list = map.findNodes(currpos)
 		while True:
-			xRand = randint(-10,10)
-			yRand = randint(-10,10)
+			xRand = randint(-maxDist,maxDist)
+			yRand = randint(-maxDist,maxDist)
 			i = currpos + (xRand + yRand * map.width)
-			if i > 0 and i < len(map.grid)-1 and map.grid[i].isWalkable and NotToFar(map, currpos, i) and not currpos == i:
+			if i > 0 and i < len(map.grid)-1 and map.grid[i].isWalkable and NotToFar(map, currpos, i, searcher.maxDist) and not currpos == i and not map.grid[i].isKnown:
 				end_node = Node(None, map.grid[i].id)
 				break
 			t = time() - starttime
 			if t > 0.001:
+				searcher.failedPathFindingAttempts += 1
+				searcher.maxDist += 1
 				return [currpos]
 
 	start_node.g = start_node.h = start_node.f = 0
