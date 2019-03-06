@@ -70,11 +70,13 @@ class WorkerGlobalState(State):
 			if worker.path == None:
 				if WorkerGlobalState.PathToBestNode and Manager.ResourceManager.bestNode.treesReserved > 0:
 					worker.path = WorkerGlobalState.PathToBestNode.copy()
+					Manager.ResourceManager.bestNode.treesReserved -= 1
 				else:
 					WorkerGlobalState.PathToBestNode = worker.path = BreadthFirst(worker.map, worker.window, worker.pos, Manager.ResourceManager.ClosestTreeNode())
-				if Manager.ResourceManager.bestNode:
-					Manager.ResourceManager.bestNode.treesReserved -= 1
-				worker.FSM.ChangeState(GoingToWork())
+					if Manager.ResourceManager.bestNode:
+						Manager.ResourceManager.bestNode.treesReserved -= 1
+				if worker.path and worker.FSM.isInState(IDLE()):
+					worker.FSM.ChangeState(GoingToWork())
 		return
 
 class Begin_Life_Worker(State):
@@ -91,8 +93,8 @@ class GoingToWork(State):
 		return 1
 	def Execute(self, worker):
 		if worker.GoTowards():
-			worker.pos = worker.path[0]
 			worker.pathBack.append(worker.path.pop(0))
+			worker.pos = worker.pathBack[-1]
 			if len(worker.path) == 0:
 				worker.FSM.ChangeState(ChopWood())
 	def Exit(self, worker):
@@ -100,17 +102,16 @@ class GoingToWork(State):
 
 class ChopWood(State):
 	def Enter(self, worker):
-	    worker.startTime = time()
+	    worker.startTime = perf_counter()
 
 	def Execute(self, worker):
-		worker.freezeTime = time()
-		if worker.freezeTime - worker.startTime > 5:
+		if perf_counter() - worker.startTime > 5:
 			worker.map.grid[worker.pos].treesLeft -= 1
 			tree = worker.map.grid[worker.pos].trees.pop()
 			tree.circle.undraw()
 			worker.pathBack.reverse()
 			worker.path = worker.pathBack
-			worker.pathBack = []
+			worker.pathBack = [worker.townHall.pos]
 			worker.FSM.ChangeState(TransportBack())
 		return
 
@@ -119,8 +120,8 @@ class TransportBack(State):
 		if worker.map.grid[worker.pos].trees and len(worker.pathBack) < 1:
 			worker.carrying["wood"] = 1
 		if worker.GoTowards():
-			worker.pos = worker.path[0]
 			worker.pathBack.append(worker.path.pop(0))
+			worker.pos = worker.pathBack[-1]
 			if len(worker.path) == 0:
 				worker.townHall.wood += 1
 				worker.path = None
@@ -152,11 +153,11 @@ class GoToBuildingSite(State):
 
 class Build(State):
 	def Enter(self, builder):
-		builder.startTime = time()
+		builder.startTime = perf_counter()
 		BaseGameEntityClass.coleMil = Entitys.ColeMil(builder.pos)
 
 	def Execute(self, builder):
-		builder.freezeTime = time()
+		builder.freezeTime = perf_counter()
 		if not builder.colemil and builder.freezeTime - builder.startTime > JsonLoader.Data["entitys"]["colemil"]["time"]:
 			BaseGameEntityClass.coleMil.circle.setFill(BaseGameEntityClass.coleMil.color)
 			BaseGameEntityClass.townHall.wood -= 10
@@ -189,12 +190,10 @@ class GoToWork(State):
 
 class MakeCharcoal(State):
 	def Enter(self, fineWorker):
-		fineWorker.startTime = time()
+		fineWorker.startTime = perf_counter()
 
 	def Execute(self, fineWorker):
-		fineWorker.freezeTime = time()
-		t = fineWorker.freezeTime - fineWorker.startTime
-		if fineWorker.freezeTime - fineWorker.startTime > 3 and fineWorker.townHall.wood > 2:
+		if perf_counter() - fineWorker.startTime > 3 and fineWorker.townHall.wood > 2:
 			fineWorker.townHall.charcoal += 1
 			fineWorker.townHall.wood -= 2
-			fineWorker.startTime = time()
+			fineWorker.startTime = perf_counter()
