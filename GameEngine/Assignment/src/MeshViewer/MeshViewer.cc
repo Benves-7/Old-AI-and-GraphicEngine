@@ -26,6 +26,7 @@ struct ModelMesh
 {
 	int curMeshIndex;
 	glm::mat4 transform;
+	glm::vec3 transformvec3;
 	DrawState drawstate;
 	int numMaterials;
 	enum {
@@ -48,9 +49,14 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
 	// own funk
-	static void CreateObject(int curMeshIndex, glm::mat4 transform, glm::vec4 color);
-	void ChangeObject(int curMeshIndex);
+	static void CreateObject(int curMeshIndex, glm::vec3 transform, glm::vec4 color);
+	static void MakeDrawStates();
+	static void setPosition(int index, glm::vec3 transform);
+	void TryAgain(ModelMesh &object);
+	void ChangeMesh(int curMeshIndex);
 	static Array<ModelMesh> models;
+	static Array<DrawState> drawStates;
+    static int numMaterials;
 
 private:
     void handleInput();
@@ -72,6 +78,8 @@ private:
     glm::mat4 modelViewProj;
 
 	int selectedID = 0;
+	int numWantedInstances;
+	int MaxNumInstances = 10;
     int curMeshIndex = 0;
 	int numOfShape = 2;
 
@@ -87,7 +95,6 @@ private:
     };
     Id shaders[numShaders];
     ResourceLabel curMaterialLabel;
-    int numMaterials = 0;
     struct Material {
         int shaderIndex = Phong;
         Id pipeline;
@@ -124,6 +131,9 @@ private:
     const float maxCamHeight = 5.0f;
 };
 Array<ModelMesh> MeshViewerApp::models;
+Array<DrawState> MeshViewerApp::drawStates;
+int MeshViewerApp::numMaterials;
+
 OryolMain(MeshViewerApp);
 
 const char* MeshViewerApp::meshNames[numMeshes] = {
@@ -156,13 +166,14 @@ PYBIND11_EMBEDDED_MODULE(scripting, m)
 
 
 	m.def("createModel", &MeshViewerApp::CreateObject, py::return_value_policy::reference);
+	m.def("setPosition", &MeshViewerApp::setPosition, py::return_value_policy::reference);
 
 }
 
 //-----------------------------------------------------------------------------
 AppState::Code
 MeshViewerApp::OnInit() {
-
+	py::initialize_interpreter();
     // setup IO system
     IOSetup ioSetup;
 	ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
@@ -217,12 +228,6 @@ MeshViewerApp::OnInit() {
     this->shaders[Lambert] = Gfx::CreateResource(LambertShader::Setup());
     this->shaders[Phong]   = Gfx::CreateResource(PhongShader::Setup());
 
-	//for (int i = 0; i < this->numOfShape; i++)
-	//{
-	//	this->CreateObject(this->curMeshIndex + i, glm::translate(glm::mat4(), glm::vec3(0 + 3*i, 0, 0)), glm::vec4(0, 255, 0, 0));
-	//}
-
-
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -236,8 +241,12 @@ MeshViewerApp::OnInit() {
 	try
 	{
 		py::exec(R"(
-			import scripting
-			scripting.createModel("root:tiger.omsh.txt", scripting.vec3(0,1,0), scripting.vec4(0,255,0,0))
+			from scripting import *
+
+			createModel(0, vec3(0, 0, 0), vec4(0, 255, 0, 0))
+			createModel(0, vec3(0, 3, 0), vec4(0, 0, 255, 0))
+
+			setPosition(0, vec3(0, 3, 0))
 			)");
 	}
 	catch (const std::exception e)
@@ -265,8 +274,12 @@ MeshViewerApp::OnRunning() {
 		{
 			Gfx::ApplyDrawState(MeshViewerApp::models[i].drawstate);
 		}
+		else
+		{
+			MeshViewerApp::TryAgain(MeshViewerApp::models[i]);
+		}
 		this->applyVariables(i);
-		for (int j = 0; j < MeshViewerApp::models[i].numMaterials; j++)
+		for (int j = 0; j < 3; j++)
 		{
 		Gfx::Draw(j);
 		}
@@ -289,43 +302,58 @@ MeshViewerApp::OnCleanup() {
 
 //-----------------------------------------------------------------------------
 void 
-MeshViewerApp::CreateObject(int curMeshIndex, glm::mat4 transform, glm::vec4 color)
+MeshViewerApp::CreateObject(int curMeshIndex, glm::vec3 transform, glm::vec4 color)
 {
+	if (MeshViewerApp::drawStates.Size() == 0)
+	{
+		MeshViewerApp::MakeDrawStates();
+	}
 	ModelMesh &object = MeshViewerApp::models.Add(ModelMesh());
 	object.curMeshIndex = curMeshIndex;
 	object.material.diffuse = color;
-	object.transform = transform;
-	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(MeshViewerApp::meshPaths[curMeshIndex]), [&object](MeshSetup& setup)
-	{
-		auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, Gfx::CreateResource(PhongShader::Setup()));
-		ps.DepthStencilState.DepthWriteEnabled = true;
-		ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-		ps.RasterizerState.CullFaceEnabled = true;
-		ps.RasterizerState.SampleCount = 4;
-		object.numMaterials = setup.NumPrimitiveGroups();
-		object.drawstate.Pipeline = Gfx::CreateResource(ps);
-	}));
+	object.transform = glm::translate(glm::mat4(), transform);
+	object.transformvec3 = transform;
+	object.drawstate = MeshViewerApp::drawStates[curMeshIndex];
 }
 
-//-----------------------------------------------------------------------------
-//void // NOT WORKING, somthing with persistant pipelines..? 
-//MeshViewerApp::ChangeObject(int curMeshIndex)
-//{
-//	ModelMesh &object = MeshViewerApp::models.Add(ModelMesh());
-//	object.curMeshIndex = curMeshIndex;
-//	object.material.diffuse = MeshViewerApp::models[this->selectedID].material.diffuse;
-//	object.transform = MeshViewerApp::models[this->selectedID].transform;
-//	object.drawstate.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(this->meshPaths[curMeshIndex]), [this, &object](MeshSetup& setup)
-//	{
-//		auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, this->shaders[object.material.shaderIndex]);
-//		ps.DepthStencilState.DepthWriteEnabled = true;
-//		ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-//		ps.RasterizerState.CullFaceEnabled = true;
-//		ps.RasterizerState.SampleCount = 4;
-//		object.numMaterials = setup.NumPrimitiveGroups();
-//		object.drawstate.Pipeline = Gfx::CreateResource(ps);
-//	}));
-//}
+void
+MeshViewerApp::MakeDrawStates()
+{
+	for (int i = 0; i < MeshViewerApp::numMeshes; i++)
+	{
+		DrawState &object = MeshViewerApp::drawStates.Add(DrawState());
+		object.Mesh[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(MeshViewerApp::meshPaths[i]), [&object](MeshSetup& setup)
+		{
+			auto ps = PipelineSetup::FromLayoutAndShader(setup.Layout, Gfx::CreateResource(PhongShader::Setup()));
+			ps.DepthStencilState.DepthWriteEnabled = true;
+			ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+			ps.RasterizerState.CullFaceEnabled = true;
+			ps.RasterizerState.SampleCount = 4;
+			MeshViewerApp::numMaterials = setup.NumPrimitiveGroups();
+			object.Pipeline = Gfx::CreateResource(ps);
+		}));
+	}
+}
+
+void MeshViewerApp::setPosition(int index, glm::vec3 transform)
+{
+	MeshViewerApp::models[index].transformvec3 = transform;
+	MeshViewerApp::models[index].transform = glm::translate(glm::mat4(), transform);
+}
+
+void
+MeshViewerApp::TryAgain(ModelMesh &object)
+{
+	object.drawstate = MeshViewerApp::drawStates[object.curMeshIndex];
+}
+
+void
+MeshViewerApp::ChangeMesh(int curMeshIndex)
+{
+	MeshViewerApp::models[this->selectedID].drawstate = MeshViewerApp::drawStates[curMeshIndex];
+}
+
+
 
 //-----------------------------------------------------------------------------
 void
@@ -396,35 +424,34 @@ MeshViewerApp::updateLight() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::drawUI() {
-	const char* state;
-	switch (Gfx::QueryResourceInfo(MeshViewerApp::models[0].drawstate.Mesh[0]).State) 
-	{
-	case ResourceState::Valid: state = "Loaded"; break;
-	case ResourceState::Failed: state = "Load Failed"; break;
-	case ResourceState::Pending: state = "Loading..."; break;
-	default: state = "Invalid"; break;
-	}
+	//const char* state;
+	//switch (Gfx::QueryResourceInfo(MeshViewerApp::models[0].drawstate.Mesh[0]).State) 
+	//{
+	//case ResourceState::Valid: state = "Loaded"; break;
+	//case ResourceState::Failed: state = "Load Failed"; break;
+	//case ResourceState::Pending: state = "Loading..."; break;
+	//default: state = "Invalid"; break;
+	//}
 	IMUI::NewFrame();
 	ImGui::Begin("Mesh Viewer", nullptr, ImVec2(240, 300), 0.25f, 0);
 	ImGui::PushItemWidth(130.0f);
-	//if (ImGui::Combo("##mesh", (int*)&MeshViewerApp::models[this->selectedID].curMeshIndex, this->meshNames, numMeshes)) 
-	//{
-	//	this->ChangeObject(MeshViewerApp::models[this->selectedID].curMeshIndex);
-	//}
 
-	ImGui::Text("state: %s\n", state);
+	//ImGui::Text("state: %s\n", state);
 	if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
 		ImGui::Text("primitive groups:\n");
 		for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
 			ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
 		}
 	}
+	if (ImGui::SliderInt("num instances", &this->numWantedInstances, 1, MaxNumInstances))
+	{
 
-	//if (ImGui::SliderInt("Shapes", &this->numOfShape, 0, 10, "%i"))
-	//{
-	//	slider to make more instances.
-	//}
-		ImGui::SliderInt("id", &selectedID, 0, MeshViewerApp::models.Size() - 1);
+	}
+	ImGui::SliderInt("id", &selectedID, 0, MeshViewerApp::models.Size() - 1);
+	if (ImGui::Combo("##mesh", (int*)&this->curMeshIndex, this->meshNames, numMeshes)) 
+	{
+		this->ChangeMesh(this->curMeshIndex);
+	}
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::SliderFloat("Dist##cam", &this->camera.dist, minCamDist, maxCamDist);
 		ImGui::SliderFloat("Height##cam", &this->camera.height, minCamHeight, maxCamHeight);
@@ -451,6 +478,23 @@ MeshViewerApp::drawUI() {
 			this->lightIntensity = 1.0f;
 			this->lightAutoOrbit = false;
 		}
+	}
+	if (ImGui::CollapsingHeader("Transform"))
+	{
+		if (ImGui::SliderFloat("Transform X", &MeshViewerApp::models[this->selectedID].transformvec3[0],-10, 10))
+		{
+			MeshViewerApp::models[this->selectedID].transform = glm::translate(glm::mat4(), MeshViewerApp::models[this->selectedID].transformvec3);
+		}
+		if (ImGui::SliderFloat("Transform Y", &MeshViewerApp::models[this->selectedID].transformvec3[1], -10, 10))
+		{
+			MeshViewerApp::models[this->selectedID].transform = glm::translate(glm::mat4(), MeshViewerApp::models[this->selectedID].transformvec3);
+		}
+		if (ImGui::SliderFloat("Transform Z", &MeshViewerApp::models[this->selectedID].transformvec3[2],-10, 10))
+		{
+			MeshViewerApp::models[this->selectedID].transform = glm::translate(glm::mat4(), MeshViewerApp::models[this->selectedID].transformvec3);
+		}
+
+		
 	}
 	if (ImGui::CollapsingHeader("Material")) {
 		if ((Lambert == MeshViewerApp::models[this->selectedID].material.shaderIndex) || (Phong == MeshViewerApp::models[this->selectedID].material.shaderIndex)) {
