@@ -9,6 +9,7 @@ set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol-samples/data/" CACHE STRING
 
 include_directories(src)
 include_directories(../pybind11/include)
+include_directories(../cjson/cJSON)
 find_package(Pythonlibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 

@@ -19,6 +19,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 #include "Python.h"
+#include "EntityManager.cc"
 
 using namespace Oryol;
 namespace py = pybind11;
@@ -69,6 +70,8 @@ private:
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
     Id mesh;
+
+	EntityManager manager;
 
 
     glm::vec3 eyePos;
@@ -178,6 +181,7 @@ MeshViewerApp::OnInit() {
     IOSetup ioSetup;
 	ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
     IO::Setup(ioSetup);
+
 
     // setup rendering and input system
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Viewer");
@@ -493,8 +497,6 @@ MeshViewerApp::drawUI() {
 		{
 			MeshViewerApp::models[this->selectedID].transform = glm::translate(glm::mat4(), MeshViewerApp::models[this->selectedID].transformvec3);
 		}
-
-		
 	}
 	if (ImGui::CollapsingHeader("Material")) {
 		if ((Lambert == MeshViewerApp::models[this->selectedID].material.shaderIndex) || (Phong == MeshViewerApp::models[this->selectedID].material.shaderIndex)) {

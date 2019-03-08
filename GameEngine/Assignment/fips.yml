@@ -27,3 +27,5 @@ imports:
         git: https://github.com/floooh/oryol-samples.git
     pybind11:
         git: https://github.com/pybind/pybind11.git
+    cjson:
+        git: https://github.com/floooh/fips-cjson.git
