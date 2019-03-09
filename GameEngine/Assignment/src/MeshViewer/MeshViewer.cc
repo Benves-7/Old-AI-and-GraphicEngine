@@ -1,6 +1,8 @@
 //-----------------------------------------------------------------------------
 //  MeshViewer.cc
 //-----------------------------------------------------------------------------
+#pragma once
+#pragma warning(disable:4996)
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Core/String/StringBuilder.h"
@@ -19,30 +21,33 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 #include "Python.h"
-#include "EntityManager.cc"
+
+
+//#include "EntityManager.cc"
+#include "GraphicsManager.cc"
 
 using namespace Oryol;
 namespace py = pybind11;
-struct ModelMesh
-{
-	int curMeshIndex;
-	glm::mat4 transform;
-	glm::vec3 transformvec3;
-	DrawState drawstate;
-	int numMaterials;
-	enum {
-		Normals = 0,
-		Lambert,
-		Phong
-	};
-	struct Material {
-		int shaderIndex = Phong;
-		Id pipeline;
-		glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
-		glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		float specPower = 32.0f;
-	} material;
-};
+//struct ModelMesh
+//{
+//	int curMeshIndex;
+//	glm::mat4 transform;
+//	glm::vec3 transformvec3;
+//	DrawState drawstate;
+//	int numMaterials;
+//	enum {
+//		Normals = 0,
+//		Lambert,
+//		Phong
+//	};
+//	struct Material {
+//		int shaderIndex = Phong;
+//		Id pipeline;
+//		glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
+//		glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+//		float specPower = 32.0f;
+//	} material;
+//};
 
 class MeshViewerApp : public App {
 public:
@@ -58,6 +63,9 @@ public:
 	static Array<ModelMesh> models;
 	static Array<DrawState> drawStates;
     static int numMaterials;
+	//EntityManager manager;
+	GraphicsManager graphics;
+
 
 private:
     void handleInput();
@@ -70,9 +78,6 @@ private:
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
     Id mesh;
-
-	EntityManager manager;
-
 
     glm::vec3 eyePos;
     glm::mat4 view;
@@ -134,6 +139,7 @@ private:
     const float maxCamHeight = 5.0f;
 };
 Array<ModelMesh> MeshViewerApp::models;
+Array<ModelMesh> GraphicsManager::models;
 Array<DrawState> MeshViewerApp::drawStates;
 int MeshViewerApp::numMaterials;
 
@@ -176,11 +182,21 @@ PYBIND11_EMBEDDED_MODULE(scripting, m)
 //-----------------------------------------------------------------------------
 AppState::Code
 MeshViewerApp::OnInit() {
+
+	AllocConsole();
+	std::freopen("conin$", "r", stdin);
+	std::freopen("conout$", "w", stdout);
+	std::freopen("conout$", "w", stderr);
+	std::printf("Debugging Window:\n");
+
 	py::initialize_interpreter();
     // setup IO system
     IOSetup ioSetup;
 	ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
     IO::Setup(ioSetup);
+
+	//manager.Init();
+	graphics.Init();
 
 
     // setup rendering and input system
@@ -248,9 +264,8 @@ MeshViewerApp::OnInit() {
 			from scripting import *
 
 			createModel(0, vec3(0, 0, 0), vec4(0, 255, 0, 0))
-			createModel(0, vec3(0, 3, 0), vec4(0, 0, 255, 0))
+			createModel(0, vec3(4, 0, 0), vec4(0, 0, 255, 0))
 
-			setPosition(0, vec3(0, 3, 0))
 			)");
 	}
 	catch (const std::exception e)

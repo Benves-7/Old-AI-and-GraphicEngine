@@ -11,11 +11,12 @@ public:
 	void Shutdown();
 	void Init();
 
-	static Oryol::Array<GameEntity> entitys;
+	Oryol::Array<GameEntity> entitys;
 
 private:
 
 };
+Oryol::Array<BaseComponent> GameEntity::components;
 
 inline EntityManager::EntityManager()
 {
@@ -27,7 +28,7 @@ inline EntityManager::~EntityManager()
 
 inline void EntityManager::Init()
 {
-	GameEntity &newEntity = EntityManager::entitys.Add(GameEntity());
+	GameEntity &newEntity = this->entitys.Add(GameEntity());
 	newEntity.Init();
 }
 

@@ -18,6 +18,7 @@ private:
 
 };
 
+
 inline GameEntity::GameEntity()
 {
 }
