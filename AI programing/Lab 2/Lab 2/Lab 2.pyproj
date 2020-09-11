@@ -34,9 +34,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MapLoader.py" />
-    <Compile Include="StartUp.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="StateMachine.py">
       <SubType>Code</SubType>
     </Compile>

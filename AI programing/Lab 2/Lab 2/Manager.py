@@ -8,6 +8,8 @@ from Entitys import *
 
 class Manager:
 	map = None
+	updateIndex = 0
+	queue = None
 
 	def Bind():
 	    Manager.map = BaseGameEntityClass.map
@@ -17,7 +19,9 @@ class Manager:
 		map = BaseGameEntityClass.map = Map("Karta Laboration 2.txt")
 		window = BaseGameEntityClass.window = Window("map")
 		window.DrawGrid(map)
+		window.window.autoflush = True
 		BaseGameEntityClass.data = JsonLoader.Data["entitys"]
+		Manager.queue = []
 		BaseGameEntityClass.PlaceStatic()
 		i = 0
 		while i < JsonLoader.Data["entitys"]["numentitys"]:
@@ -26,20 +30,24 @@ class Manager:
 
 
 	def Update():
-		ResourceManager.searchForTrees()
-		TrainingManager.CheckStatus()
 
-		for x in EntityManager.explorers:
-			x.Update()
+		t = perf_counter()
 
-		for x in EntityManager.workers:
-			x.Update()
+		while perf_counter() - t < 0.1 and len(Manager.queue) > 0:
+			size = len(Manager.queue)
+			Manager.queue.pop(0).Update()
 
-		for x in EntityManager.builders:
-			x.Update()
-
-		for x in EntityManager.fineworkers:
-			x.Update()
+		if len(Manager.queue) == 0: #JsonLoader.Data["entitys"]["numentitys"]:
+			for entity in EntityManager.explorers:
+				Manager.queue.append(entity)
+			for entity in EntityManager.workers:
+				Manager.queue.append(entity)
+			for entity in EntityManager.builders:
+				Manager.queue.append(entity)
+			for entity in EntityManager.fineworkers:
+				Manager.queue.append(entity)
+			ResourceManager.searchForTrees()
+			TrainingManager.CheckStatus()
 
 class ResourceManager(Manager):
 	treenodes = []
@@ -88,12 +96,12 @@ class ResourceManager(Manager):
 
 class TrainingManager(Manager):
 	def CheckStatus():
-		if len(EntityManager.explorers) < JsonLoader.Data["entitys"]["explorer"]["goalnumber"] and EntityManager.workers[-1].FSM.isInState(IDLE()):
+		if len(EntityManager.explorers) < JsonLoader.Data["entitys"]["explorer"]["goalnumber"] and len(EntityManager.workers) > 0 and EntityManager.workers[-1].FSM.isInState(IDLE()):
 			print("explorer needed.")
 			EntityManager.explorers.append(Explorer(EntityManager.workers.pop()))
-		if len(EntityManager.builders) < JsonLoader.Data["entitys"]["builder"]["goalnumber"] and EntityManager.workers[-1].FSM.isInState(IDLE()) and BaseGameEntityClass.townHall.wood > JsonLoader.Data["entitys"]["colemil"]["cost"]:
+		if len(EntityManager.builders) < JsonLoader.Data["entitys"]["builder"]["goalnumber"] and len(EntityManager.workers) > 0 and EntityManager.workers[-1].FSM.isInState(IDLE()) and BaseGameEntityClass.townHall.wood > JsonLoader.Data["entitys"]["colemil"]["cost"]:
 			print("builder needed.")
 			EntityManager.builders.append(Builder(EntityManager.workers.pop()))
-		if len(EntityManager.fineworkers) < JsonLoader.Data["entitys"]["fineworker"]["goalnumber"] and EntityManager.workers[-1].FSM.isInState(IDLE()) and BaseGameEntityClass.coleMil and BaseGameEntityClass.coleMil.complete:
+		if len(EntityManager.fineworkers) < JsonLoader.Data["entitys"]["fineworker"]["goalnumber"] and len(EntityManager.workers) > 0 and EntityManager.workers[-1].FSM.isInState(IDLE()) and BaseGameEntityClass.coleMil and BaseGameEntityClass.coleMil.complete:
 			print("fineworker needed.")
 			EntityManager.fineworkers.append(FineWorker(EntityManager.workers.pop()))
