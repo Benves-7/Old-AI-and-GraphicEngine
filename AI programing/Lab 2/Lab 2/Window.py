@@ -18,7 +18,7 @@ class Window:
 
 	def MakeWindow(self, name):
 		window = self.window = GraphWin(name, self.width, self.heigth, autoflush=False)
-		window.master.geometry(self.Data["offset"])
+		#window.master.geometry(self.Data["offset"])
 	
 	def DrawGrid(self, map):
 		self.map = map
